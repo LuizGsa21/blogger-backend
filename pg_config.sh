@@ -14,3 +14,8 @@ pip install Flask-OAuth
 pip install Flask-Mail
 pip install Flask-Login
 pip install Pillow
+
+sudo su postgres -c 'createuser -dRS vagrant'
+sudo su vagrant -c 'createdb'
+sudo su vagrant -c 'createdb test'
+sudo -u postgres psql -c "ALTER USER vagrant WITH PASSWORD 'vagrant';"
