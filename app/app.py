@@ -1,11 +1,11 @@
 
-from flask import Flask, g
-
+from flask import Flask
 from extensions import db, login_manager
 from config import DevelopmentConfig
 from model import Categories, Comments, Posts, Users
+from resources.posts import posts_bp
 
-DEFAULT_BLUEPRINTS = (api_bp, frontend_bp, user_bp, oauth_bp)
+DEFAULT_BLUEPRINTS = (posts_bp,)
 
 
 def create_app(app_name=None, blueprints=None, config=None):
@@ -31,9 +31,9 @@ def create_app(app_name=None, blueprints=None, config=None):
 
 def configure_hook(app):
     """ Configure app hooks. """
-    @app.before_request
-    def before_request():
-        g.user = current_user
+    # @app.before_request
+    # def before_request():
+    #     g.user = current_user
 
 
 def configure_extensions(app):
