@@ -1,19 +1,25 @@
 from flask import Blueprint, jsonify
 from app.model import Posts
 
-posts_bp = Blueprint('api', __name__, url_prefix='/api/posts')
+posts_bp = Blueprint('posts', __name__, url_prefix='/api/v1/posts')
 
 
-@posts_bp.route('/', methods=['GET'])
+@posts_bp.route('', methods=['GET'])
 def get_posts():
-    pass
+    return ''
 
-
-@posts_bp.route('/posts/<int:id>', methods=['GET'])
+@posts_bp.route('/<int:id>', methods=['GET'])
 def get_post_by_id(id):
-    pass
+    return ''
 
+@posts_bp.route('', methods=['POST'])
+def post_posts():
+    return ''
 
-@posts_bp.route('/posts/author/<int:id>', methods=['GET'])
-def get_posts_by_author_id(id):
-    pass
+@posts_bp.route('', methods=['PUT'])
+def put_posts():
+    return ''
+
+@posts_bp.route('', methods=['DELETE'])
+def delete_posts():
+    return ''
