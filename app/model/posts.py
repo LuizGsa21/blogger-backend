@@ -16,4 +16,4 @@ class Posts(db.Model):
     dateCreated = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
     lastModified = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
 
-    comments = db.relationship('Comment', backref='posts', lazy='dynamic')
+    comments = db.relationship('Comments', backref='posts', lazy='dynamic')
