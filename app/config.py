@@ -13,9 +13,6 @@ class Config(object):
     STATIC_FOLDER = os.path.join(PROJECT_ROOT, 'static')
     TEMPLATE_FOLDER = os.path.join(PROJECT_ROOT, 'templates')
 
-    # SQLALCHEMY_DATABASE_URI = 'sqlite://'
-    # SQLALCHEMY_ECHO = True
-
     ALLOWED_EXTENSIONS = ('png', 'jpg', 'jpeg', 'gif')
     UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploads')
     MAX_UPLOAD_SIZE = 500 * 1024 ^ 2  # about 500KB
@@ -47,3 +44,21 @@ class DevelopmentConfig(Config):
     # MAIL_USERNAME = os.environ['MAIL_USERNAME']
     # MAIL_PASSWORD = os.environ['MAIL_PASSWORD']
     # MAIL_DEFAULT_SENDER = os.environ['MAIL_SENDER']
+
+class TestConfig(Config):
+    TESTING = True
+
+    SQLALCHEMY_ECHO = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite://'
+    DEBUG = True
+    SECRET_KEY = 'test'
+
+    GOOGLE_CLIENT_ID = os.environ['GOOGLE_CLIENT_ID']
+    GOOGLE_CLIENT_SECRET = os.environ['GOOGLE_CLIENT_SECRET']
+
+    FACEBOOK_CLIENT_ID = os.environ['FACEBOOK_CLIENT_ID']
+    FACEBOOK_CLIENT_SECRET = os.environ['FACEBOOK_CLIENT_SECRET']
+
+    GITHUB_CLIENT_ID = os.environ['GITHUB_CLIENT_ID']
+    GITHUB_CLIENT_SECRET = os.environ['GITHUB_CLIENT_SECRET']
+
