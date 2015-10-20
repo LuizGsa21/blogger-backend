@@ -47,6 +47,8 @@ class DevelopmentConfig(Config):
 
 class TestConfig(Config):
     TESTING = True
+    # http://stackoverflow.com/questions/26647032/py-test-to-test-flask-register-assertionerror-popped-wrong-request-context
+    PRESERVE_CONTEXT_ON_EXCEPTION = False
 
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
