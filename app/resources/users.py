@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from app.model import Posts
+from app.models import Posts, Users
 
 users_bp = Blueprint('users', __name__, url_prefix='/api/v1/users')
 

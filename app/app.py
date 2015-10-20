@@ -2,7 +2,7 @@
 from flask import Flask
 from extensions import db, login_manager
 from config import DevelopmentConfig
-from model import Categories, Comments, Posts, Users
+from models import Categories, Comments, Posts, Users
 from resources import posts_bp, users_bp, comments_bp
 
 DEFAULT_BLUEPRINTS = (posts_bp, users_bp, comments_bp)

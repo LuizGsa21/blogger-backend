@@ -8,7 +8,7 @@ import unittest
 from app import create_app
 from app.config import TestConfig
 from app.extensions import db
-from app.model import Users
+from app.models import Users
 
 
 class TestCase(unittest.TestCase):

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from app.model import Posts
+from app.models import Posts
 
 posts_bp = Blueprint('posts', __name__, url_prefix='/api/v1/posts')
 

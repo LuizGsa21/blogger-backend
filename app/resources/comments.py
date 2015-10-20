@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from app.model import Comments
+from app.models import Comments
 
 comments_bp = Blueprint('comments', __name__, url_prefix='/api/v1/comments')
 
