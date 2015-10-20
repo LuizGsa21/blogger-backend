@@ -1,6 +1,8 @@
 from app.extensions import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from .sqlalchemy_helpers import CaseInsensitiveWord
+from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class Users(db.Model):
@@ -27,8 +29,40 @@ class Users(db.Model):
     comments = db.relationship('Comments', backref='user', lazy='dynamic')
 
     def __init__(self, **kwargs):
+        password = kwargs.pop('password')
+        self.set_password(password)
         super(Users, self).__init__(**kwargs)
-        self.pwdhash = generate_password_hash(self.pwdhash)
 
     def check_password(self, password):
         return check_password_hash(self.pwdhash, password)
+
+    def set_password(self, password):
+        self.pwdhash = generate_password_hash(password)
+
+    @hybrid_property
+    def fullname(self):
+        fullname = ''
+        if isinstance(self.firstName, basestring):
+            fullname = self.firstName
+        if isinstance(self.lastName, basestring):
+            fullname += ' ' + self.lastName
+        return fullname
+
+    @hybrid_property
+    def username_insensitive(self):
+        return self.username.lower()
+
+    @username_insensitive.comparator
+    def username_insensitive(self):
+        return CaseInsensitiveWord(self.username)
+
+    @hybrid_property
+    def email_insensitive(self):
+        return self.email.lower()
+
+    @email_insensitive.comparator
+    def email_insensitive(self):
+        return CaseInsensitiveWord(self.email)
+
+    def is_admin(self):
+        return self.isAdmin
