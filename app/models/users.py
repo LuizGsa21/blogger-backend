@@ -1,5 +1,6 @@
 from app.extensions import db
 from datetime import datetime
+from flask import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from .sqlalchemy_helpers import CaseInsensitiveWord
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -38,6 +39,10 @@ class Users(db.Model):
 
     def set_password(self, password):
         self.pwdhash = generate_password_hash(password)
+
+    @property
+    def url(self):
+        return url_for('users.get_user_by_id', id=self.id, _external=True)
 
     @hybrid_property
     def fullname(self):
