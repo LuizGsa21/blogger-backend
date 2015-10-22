@@ -7,7 +7,7 @@ class Comments(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     parentId = db.Column(db.Integer(), db.ForeignKey('comments.id'), nullable=True)
     userId = db.Column(db.Integer(), db.ForeignKey('users.id'))
-    postId = db.Column(db.Integer(), db.ForeignKey('posts.id'))
+    articleId = db.Column(db.Integer(), db.ForeignKey('articles.id'))
 
     title = db.Column(db.String(200))
     body = db.Column(db.String(10000))

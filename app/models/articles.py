@@ -1,8 +1,8 @@
 from app.extensions import db
 from datetime import datetime
 
-class Posts(db.Model):
-    __tablename__ = 'posts'
+class Articles(db.Model):
+    __tablename__ = 'articles'
 
     id = db.Column(db.Integer(), primary_key=True)
     categoryId = db.Column(db.Integer(), db.ForeignKey('categories.id'), nullable=False)
@@ -16,4 +16,4 @@ class Posts(db.Model):
     dateCreated = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
     lastModified = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
 
-    comments = db.relationship('Comments', backref='posts', lazy='dynamic')
+    comments = db.relationship('Comments', backref='articles', lazy='dynamic')

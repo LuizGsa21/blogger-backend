@@ -1,4 +1,4 @@
 from categories import Categories
 from comments import Comments
-from posts import Posts
+from articles import Articles
 from users import Users

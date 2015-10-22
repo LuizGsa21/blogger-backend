@@ -26,7 +26,7 @@ class Users(db.Model):
 
     isAdmin = db.Column(db.Boolean(), default=False)
 
-    posts = db.relationship('Posts', backref='author', lazy='dynamic')
+    articles = db.relationship('Articles', backref='author', lazy='dynamic')
     comments = db.relationship('Comments', backref='user', lazy='dynamic')
 
     def __init__(self, **kwargs):

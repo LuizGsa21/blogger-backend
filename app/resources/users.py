@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from app.models import Posts, Users
+from app.models import Articles, Users
 from app.schemas import user_post_serializer
 from app.extensions import db
 

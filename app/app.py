@@ -2,10 +2,10 @@
 from flask import Flask
 from extensions import db, login_manager
 from config import DevelopmentConfig
-from models import Categories, Comments, Posts, Users
-from resources import posts_bp, users_bp, comments_bp
+from models import Categories, Comments, Articles, Users
+from resources import articles_bp, users_bp, comments_bp
 
-DEFAULT_BLUEPRINTS = (posts_bp, users_bp, comments_bp)
+DEFAULT_BLUEPRINTS = (articles_bp, users_bp, comments_bp)
 
 
 def create_app(app_name=None, blueprints=None, config=None):
