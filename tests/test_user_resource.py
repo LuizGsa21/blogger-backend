@@ -46,3 +46,14 @@ class TestUserResource(TestCase):
         attributes = data['data']['attributes']
         assert attributes['username'] == 'bob1', \
             'Expected user name to be `{0}` but got `{1}`'.format('bob1', attributes['username'])
+
+    def test_delete_user_by_id(self):
+        user = Users.query.get(2)
+        assert user, 'Failed to load fixture. User missing...'
+        response = self.client.delete('/api/v1/users/2', content_type='application/json')
+        assert response.status_code == 200, 'Expected 200 response but got %s instead.' % response.status_code
+        assert response.data, 'Expected a non-empty response'
+        data = json.loads(response.data)
+        assert data['data'] is None, 'Expected data attribute to be none.'
+        assert Users.query.get(2) is None, 'Expected user with id 2 to be deleted.'
+
