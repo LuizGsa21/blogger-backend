@@ -17,8 +17,9 @@ def get_users():
 
 @users_bp.route('/<int:id>', methods=['GET'])
 def get_user_by_id(id):
-    return ''
-
+    users = Users.query.get(id)
+    data, errors = user_resource_serializer.dump(users)
+    return jsonify(data=data)
 
 @users_bp.route('', methods=['POST'])
 def post_users():
