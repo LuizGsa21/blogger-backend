@@ -56,3 +56,9 @@ def put_users():
 @users_bp.route('', methods=['DELETE'])
 def delete_users():
     return ''
+
+@users_bp.route('/<int:id>', methods=['DELETE'])
+def delete_users_by_id(id):
+    Users.query.filter_by(id=id).delete()
+    db.session.commit()
+    return jsonify(data=None)
