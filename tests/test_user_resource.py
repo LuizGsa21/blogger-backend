@@ -61,3 +61,31 @@ class TestUserResource(TestCase):
         assert data['data'] is None, 'Expected data attribute to be none.'
         assert Users.query.get(2) is None, 'Expected user with id 2 to be deleted.'
 
+    def test_put_users_by_id(self):
+        updated_fields = {
+            'data': {
+                'type': 'users',
+                'id': 1,
+                'attributes': {
+                    'username': 'LuizGsa21',
+                    'email': 'LuizGsa21@email.com',
+                    'firstName': 'Luiz',
+                    'lastName': 'Arantes Sa',
+                    'avatarPath': 'avatar.jpg',
+                    'isAdmin': 1
+                }
+            }
+        }
+        response = self.client.put('/api/v1/users/1', data=json.dumps(updated_fields), content_type='application/json')
+        assert response.data, 'Expected a non-empty response'
+        db.session.rollback()
+        assert response.status_code == 200, 'Expected 200 response but got %s instead.' % response.status_code
+        assert response.data, 'Expected a non-empty response'
+        data = json.loads(response.data)['data']['attributes']
+        fields = updated_fields['data']['attributes']
+        assert data['username'] == fields['username'], 'Failed to update `username`'
+        assert data['firstName'] == fields['firstName'], 'Failed to update `firstName`'
+        user = Users.query.get(1)
+        assert user.isAdmin == 0,\
+            'We should not be able to update admin fields when using the endpoint api'
+
