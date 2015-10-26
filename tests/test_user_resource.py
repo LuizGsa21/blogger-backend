@@ -31,6 +31,18 @@ class TestUserResource(TestCase):
         response = self.client.get('/api/v1/users', content_type='application/json')
         assert response.data, 'Expected a non-empty response'
         data = response.data
-        assert 'password' not in data, 'Password field should now be returned'
+        assert 'password' not in data, 'Password field should not be returned'
         data = json.loads(data)
         assert Users.query.count() == len(data['data']), 'Expected all users to be returned'
+
+    def test_get_user_by_id(self):
+        response = self.client.get('/api/v1/users/2', content_type='application/json')
+        assert response.data, 'Expected a non-empty response'
+        data = response.data
+        assert 'password' not in data, 'Password field should not be returned'
+        data = json.loads(data)
+        assert data['data']['id'] == 2
+        assert data['data']['type'] == 'users'
+        attributes = data['data']['attributes']
+        assert attributes['username'] == 'bob1', \
+            'Expected user name to be `{0}` but got `{1}`'.format('bob1', attributes['username'])
