@@ -1,6 +1,7 @@
 import pprint
 from tests import TestCase
 from app.models import Users
+from app.extensions import db
 import json
 
 
@@ -17,6 +18,7 @@ class TestUserResource(TestCase):
         old_count = Users.query.count()
         # create a new user
         response = self.client.post('/api/v1/users', data=json.dumps(newUser), content_type='application/json')
+        db.session.rollback()
         self.assertEqual(old_count, Users.query.count() - 1, 'Expected a user to be created.')
         self.assertEqual(response.status_code, 201,
                          'Received %s Expected 201 status for when a resource is created.' % response.status)
@@ -24,6 +26,7 @@ class TestUserResource(TestCase):
 
         # create a user using the same credentials. This should fail and return a 409 status.
         response = self.client.post('/api/v1/users', data=json.dumps(newUser), content_type='application/json')
+        db.session.rollback()
         self.assertEqual(response.status_code, 409, 'Expected 409 status since resource already exists.')
         self.assertEqual(old_count, Users.query.count() - 1, "A user shouldn't have been created.")
 
@@ -51,6 +54,7 @@ class TestUserResource(TestCase):
         user = Users.query.get(2)
         assert user, 'Failed to load fixture. User missing...'
         response = self.client.delete('/api/v1/users/2', content_type='application/json')
+        db.session.rollback()
         assert response.status_code == 200, 'Expected 200 response but got %s instead.' % response.status_code
         assert response.data, 'Expected a non-empty response'
         data = json.loads(response.data)
