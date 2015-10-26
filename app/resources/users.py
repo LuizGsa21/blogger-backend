@@ -21,6 +21,7 @@ def get_user_by_id(id):
     data, errors = user_resource_serializer.dump(users)
     return jsonify(data=data)
 
+
 @users_bp.route('', methods=['POST'])
 def post_users():
     data = request.data
@@ -52,10 +53,6 @@ def post_users():
 def put_users():
     return ''
 
-
-@users_bp.route('', methods=['DELETE'])
-def delete_users():
-    return ''
 
 @users_bp.route('/<int:id>', methods=['DELETE'])
 def delete_users_by_id(id):
