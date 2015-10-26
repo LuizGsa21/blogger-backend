@@ -1,10 +1,5 @@
 from .users import (
-    UserSchema,
-    UserPostSchema
+    user_serializer,
+    user_post_serializer,
+    user_resource_serializer
 )
-
-
-user_serializer = UserSchema()
-users_serializer = UserSchema(many=True)
-
-user_post_serializer = UserPostSchema()
