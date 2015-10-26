@@ -1,9 +1,12 @@
-from marshmallow import Schema, fields, validates_schema, ValidationError
+from marshmallow import Schema, fields, validates_schema, ValidationError, pre_dump
 from app.models import Users
 from .schema_helpers import require
 
 
 class UserSchema(Schema):
+
+    dateJoined = fields.DateTime()
+
     class Meta:
         fields = ('username', 'firstName', 'lastName', 'dateJoined', 'avatarPath')
 
@@ -11,8 +14,14 @@ class UserSchema(Schema):
 class UserResourceSchema(Schema):
     type = fields.String('users')
     id = fields.Function(lambda obj: obj.id)
-    attributes = fields.Function(lambda obj: user_serializer.dump(obj).data)
+    attributes = fields.Method('get_attributes')
     links = fields.Function(lambda obj: {'self': obj.url})
+
+    def get_attributes(self, data):
+        if isinstance(data, Users):
+            return user_serializer.dump(data).data
+        else:
+            return user_serializer.dump(data['data']['attributes']).data
 
 
 class UserPostSchema(Schema):

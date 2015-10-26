@@ -49,9 +49,13 @@ def post_users():
     return response
 
 
-@users_bp.route('', methods=['PUT'])
-def put_users():
-    return ''
+@users_bp.route('/<int:id>', methods=['PUT'])
+def put_users_by_id(id):
+    response = json.loads(request.data)
+    data, errors, = user_serializer.dump(response['data']['attributes'])
+    Users.query.filter_by(id=id).update(data)
+    db.session.commit()
+    return jsonify(data=user_resource_serializer.dump(Users.query.get(id)).data)
 
 
 @users_bp.route('/<int:id>', methods=['DELETE'])
