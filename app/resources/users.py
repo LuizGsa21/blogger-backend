@@ -1,6 +1,8 @@
+import pprint
+import json
 from flask import Blueprint, jsonify, request
 from app.models import Articles, Users
-from app.schemas import user_post_serializer
+from app.schemas import user_post_serializer, user_serializer, user_resource_serializer
 from app.extensions import db
 
 users_bp = Blueprint('users', __name__, url_prefix='/api/v1/users')
@@ -8,11 +10,15 @@ users_bp = Blueprint('users', __name__, url_prefix='/api/v1/users')
 
 @users_bp.route('', methods=['GET'])
 def get_users():
-    return ''
+    users = Users.query.all()
+    data, errors = user_resource_serializer.dump(users, many=True)
+    return jsonify(data=data)
+
 
 @users_bp.route('/<int:id>', methods=['GET'])
 def get_user_by_id(id):
     return ''
+
 
 @users_bp.route('', methods=['POST'])
 def post_users():
@@ -36,21 +42,15 @@ def post_users():
     user = Users(**data)
     db.session.add(user)
     db.session.commit()
-    data.pop('password', None)
-    response = jsonify(data={
-        'type': 'users',
-        'id': user.id,
-        'attributes': data,
-        'links': {
-            'self': user.url
-        }
-    })
+    response = jsonify(data=user_resource_serializer.dump(user).data)
     response.status_code = 201
     return response
+
 
 @users_bp.route('', methods=['PUT'])
 def put_users():
     return ''
+
 
 @users_bp.route('', methods=['DELETE'])
 def delete_users():

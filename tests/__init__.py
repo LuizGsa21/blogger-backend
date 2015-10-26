@@ -28,4 +28,11 @@ class TestCase(unittest.TestCase):
         self.ctx.pop()
 
     def init_data(self):
+        for i in range(10):
+            db.session.add(Users(**{
+                'username': 'bob%s' % i,
+                'password': 'universe%s' % i,
+                'firstName': 'Jimmy%s' % i,
+                'lastName': 'builder%s' % i,
+            }))
         db.session.commit()
