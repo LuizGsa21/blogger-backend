@@ -1,5 +1,6 @@
 oauth.json
 .vagrant
+*.cache
 
 ### Python
 *.py[cod]
