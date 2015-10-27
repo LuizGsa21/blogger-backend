@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, validates_schema, ValidationError, pre_dump
 from app.models import Users
 from .schema_helpers import require
-
+from .base import ResourceSchema
 
 class UserSchema(Schema):
 
@@ -10,19 +10,12 @@ class UserSchema(Schema):
     class Meta:
         fields = ('username', 'firstName', 'lastName', 'dateJoined', 'avatarPath')
 
+user_serializer = UserSchema()
 
-class UserResourceSchema(Schema):
+class UserResourceSchema(ResourceSchema):
+    __model__ = Users
+    __serializer__ = user_serializer
     type = fields.String('users')
-    id = fields.Function(lambda obj: obj.id)
-    attributes = fields.Method('get_attributes')
-    links = fields.Function(lambda obj: {'self': obj.url})
-
-    def get_attributes(self, data):
-        if isinstance(data, Users):
-            return user_serializer.dump(data).data
-        else:
-            return user_serializer.dump(data['data']['attributes']).data
-
 
 class UserPostSchema(Schema):
     username = fields.String(required=require('username'))
@@ -46,6 +39,6 @@ class UserPostSchema(Schema):
             raise ValidationError({'detail': "email '%s' already registered." % email, 'status': 409}, 'email')
 
 
-user_serializer = UserSchema()
+
 user_post_serializer = UserPostSchema()
 user_resource_serializer = UserResourceSchema()
