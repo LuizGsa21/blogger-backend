@@ -37,9 +37,26 @@ class ResourceArticlesTestCase(TestCase):
         assert len(article['attributes']['title'])
         assert len(article['attributes']['body'])
 
-    # def test_put_article_by_id(self):
-    #     pass
-    #
+    def test_put_article_by_id(self):
+        updated_fields = {
+            'data': {
+                'type': 'articles',
+                'id': 1,
+                'attributes': {
+                    'title': 'New Title',
+                    'body': 'New Body'
+                }
+            }
+        }
+        response = self.client.put('/api/v1/articles/1', data=json.dumps(updated_fields), content_type='application/json')
+        db.session.rollback()
+        assert response.data  # expect a non-empty response
+        assert response.status_code == 200
+        data = json.loads(response.data)['data']['attributes']
+        fields = updated_fields['data']['attributes']
+        assert data['title'] == fields['title']
+        assert data['body'] == fields['body']
+
     # def test_post_articles(self):
     #     pass
     #
