@@ -5,7 +5,7 @@ from app.extensions import db
 import json
 
 
-class TestUserResource(TestCase):
+class ResourceUsersTestCase(TestCase):
     def test_create_user(self):
         newUser = {
             'username': 'LuizGsa21',

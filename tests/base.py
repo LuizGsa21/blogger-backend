@@ -29,11 +29,12 @@ class TestCase(unittest.TestCase):
 
     def init_data(self):
         session_add = db.session.add
+        commit = db.session.commit
         all_categories = []
         for i, category in enumerate(('PHP', 'Python', 'C', 'C++', 'Java')):
             all_categories.append(Categories(name=category))
             session_add(all_categories[i])
-
+        commit()
         all_users = []
         for i in range(10):
             all_users.append(Users(**{
@@ -43,14 +44,14 @@ class TestCase(unittest.TestCase):
                 'lastName': 'builder%s' % i,
             }))
             session_add(all_users[i])
-
+        commit()
         user = all_users[0]
         category = all_categories[0]
-        # for i in range(5):
-        Articles(**{
-            'categoryId': category.id,
-            'authorId': user.id,
-            'title': 'Article #%s',
-            'body': 'Article body %s',
-        })
-        db.session.commit()
+        for i in range(3):
+            session_add(Articles(**{
+                'categoryId': category.id,
+                'authorId': user.id,
+                'title': 'Article #%s' % i,
+                'body': 'Article body %s' % i,
+            }))
+        commit()
