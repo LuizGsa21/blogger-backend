@@ -22,9 +22,21 @@ class ResourceArticlesTestCase(TestCase):
         assert len(article['attributes']['title'])
         assert len(article['attributes']['body'])
 
-    # def test_get_articles_by_id(self):
-    #     pass
-    #
+    def test_get_article_by_id(self):
+        count = Articles.query.count()
+        assert count > 2  # verify fixture
+
+        response = self.client.get('/api/v1/articles/2', content_type='application/json')
+        assert response.data  # expect a non-empty response
+        data = json.loads(response.data)
+
+        article = data['data']
+        assert article['type'] == 'articles'
+        assert 'id' in article
+        assert 'id' not in article['attributes']
+        assert len(article['attributes']['title'])
+        assert len(article['attributes']['body'])
+
     # def test_put_article_by_id(self):
     #     pass
     #
