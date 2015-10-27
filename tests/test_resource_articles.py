@@ -43,5 +43,13 @@ class ResourceArticlesTestCase(TestCase):
     # def test_post_articles(self):
     #     pass
     #
-    # def test_delete_article_by_id(self):
-    #     pass
+    def test_delete_article_by_id(self):
+        article = Articles.query.get(2)
+        assert article  # verify fixture
+        response = self.client.delete('/api/v1/articles/2', content_type='application/json')
+        db.session.rollback()
+        assert response.data  # expect a non-empty response
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['data'] is None
+        assert Articles.query.get(2) is None  # article should be deleted
