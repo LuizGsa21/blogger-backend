@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 from app.models import Articles
 from app.schemas import article_resource_serializer
+from app.extensions import db
 
 articles_bp = Blueprint('articles', __name__, url_prefix='/api/v1/articles')
 
@@ -29,6 +30,8 @@ def put_articles():
     return ''
 
 
-@articles_bp.route('', methods=['DELETE'])
-def delete_articles():
-    return ''
+@articles_bp.route('/<int:id>', methods=['DELETE'])
+def delete_article_by_id(id):
+    Articles.query.filter_by(id=id).delete()
+    db.session.commit()
+    return jsonify(data=None)
