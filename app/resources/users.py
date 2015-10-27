@@ -50,7 +50,7 @@ def post_users():
 
 
 @users_bp.route('/<int:id>', methods=['PUT'])
-def put_users_by_id(id):
+def put_user_by_id(id):
     response = json.loads(request.data)
     data, errors, = user_serializer.dump(response['data']['attributes'])
     Users.query.filter_by(id=id).update(data)
@@ -59,7 +59,7 @@ def put_users_by_id(id):
 
 
 @users_bp.route('/<int:id>', methods=['DELETE'])
-def delete_users_by_id(id):
+def delete_user_by_id(id):
     Users.query.filter_by(id=id).delete()
     db.session.commit()
     return jsonify(data=None)

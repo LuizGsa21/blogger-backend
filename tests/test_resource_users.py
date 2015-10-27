@@ -1,5 +1,5 @@
 import pprint
-from tests import TestCase
+from tests.base import TestCase
 from app.models import Users
 from app.extensions import db
 import json
@@ -61,7 +61,7 @@ class TestUserResource(TestCase):
         assert data['data'] is None, 'Expected data attribute to be none.'
         assert Users.query.get(2) is None, 'Expected user with id 2 to be deleted.'
 
-    def test_put_users_by_id(self):
+    def test_put_user_by_id(self):
         updated_fields = {
             'data': {
                 'type': 'users',
