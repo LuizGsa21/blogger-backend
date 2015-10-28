@@ -1,11 +1,12 @@
 
-from flask import Flask
+from flask import Flask, g
 from extensions import db, login_manager
+from flask_login import AnonymousUserMixin as _AnonymousUserMixin
 from config import DevelopmentConfig
 from models import Categories, Comments, Articles, Users
-from resources import articles_bp, users_bp, comments_bp
+from resources import articles_bp, users_bp, comments_bp, auth_bp
 
-DEFAULT_BLUEPRINTS = (articles_bp, users_bp, comments_bp)
+DEFAULT_BLUEPRINTS = (articles_bp, users_bp, comments_bp, auth_bp)
 
 
 def create_app(app_name=None, blueprints=None, config=None):
@@ -48,9 +49,19 @@ def configure_extensions(app):
     # mail.init_app(app)
 
     # Login Manger
-    # login_manager.init_app(app)
-    # login_manager.login_view = 'frontend.login'
+    login_manager.init_app(app)
 
+    #  Interface for anonymous users
+    class AnonymousUserMixin(_AnonymousUserMixin):
+        username = 'Guest User'
+        firstName = ''
+        lastName = ''
+        email = ''
+        is_admin = False
+
+    login_manager.login_view = 'auth.post_login'
+    login_manager.session_protection = "strong"
+    login_manager.anonymous_user = AnonymousUserMixin
 
 def configure_blueprints(app, blueprints):
     """ Registers blueprints to the applications """

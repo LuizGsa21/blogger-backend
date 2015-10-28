@@ -4,9 +4,10 @@ from flask import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from .sqlalchemy_helpers import CaseInsensitiveWord
 from sqlalchemy.ext.hybrid import hybrid_property
+from flask_login import UserMixin
 
 
-class Users(db.Model):
+class Users(db.Model, UserMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer(), primary_key=True)
