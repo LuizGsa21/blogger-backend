@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, validates_schema, ValidationError, pre_dump
+from marshmallow import Schema, fields, validates_schema, ValidationError, pre_dump, pre_load
 from app.models import Users
 from .schema_helpers import require
 from .base import ResourceSchema
@@ -38,6 +38,13 @@ class UserPostSchema(Schema):
         if existing_user:
             raise ValidationError({'detail': "email '%s' already registered." % email, 'status': 409}, 'email')
 
+    @pre_load
+    def unwrap_data(self, data):
+        if 'data' in data:
+            data = data['data']
+        if 'attributes' in data:
+            data = data['attributes']
+        return data
 
 
 user_post_serializer = UserPostSchema()

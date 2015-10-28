@@ -1,7 +1,8 @@
-from marshmallow import Schema, fields, validates_schema, ValidationError, pre_dump
+from marshmallow import Schema, fields, validates_schema, ValidationError, pre_dump, pre_load
+import pprint
 from app.models import Users
 from .schema_helpers import require
-
+import json
 
 
 class ResourceSchema(Schema):
@@ -21,3 +22,9 @@ class ResourceSchema(Schema):
             return self.__serializer__.dump(data).data
         else:
             return self.__serializer__.dump((data['data']['attributes'])).data
+
+    @pre_load
+    def unwrap_data(self, data):
+        if 'data' in data:
+            data = data['data']
+        return data
