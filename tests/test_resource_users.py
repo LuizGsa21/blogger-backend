@@ -58,15 +58,38 @@ class ResourceUsersTestCase(TestCase):
             'Expected user name to be `{0}` but got `{1}`'.format('bob1', attributes['username'])
 
     def test_delete_user_by_id(self):
-        user = Users.query.get(2)
-        assert user, 'Failed to load fixture. User missing...'
+
+        # attempt to delete a user using an anonymous user. Note: this should fail
         response = self.client.delete('/api/v1/users/2', content_type='application/json')
         db.session.rollback()
-        assert response.status_code == 200, 'Expected 200 response but got %s instead.' % response.status_code
-        assert response.data, 'Expected a non-empty response'
+        assert response.status_code == 403
+        assert response.data
         data = json.loads(response.data)
-        assert data['data'] is None, 'Expected data attribute to be none.'
-        assert Users.query.get(2) is None, 'Expected user with id 2 to be deleted.'
+        assert data['errors']
+        assert Users.query.get(2)
+
+        # attempt to delete a user using an registered user. Note: this should fail
+        self.login('bob1', 'universe1')
+        response = self.client.delete('/api/v1/users/2', content_type='application/json')
+        db.session.rollback()
+        assert response.status_code == 403
+        assert response.data
+        data = json.loads(response.data)
+        assert data['errors']
+        assert Users.query.get(2)
+        self.logout()
+
+        # attempt to delete a user as an admin.
+        self.login('bob0', 'universe0')
+        user = Users.query.filter_by(username='bob0').first()
+        user.isAdmin = True
+        db.session.commit()
+        response = self.client.delete('/api/v1/users/2', content_type='application/json')
+        db.session.rollback()
+        assert response.data
+        data = json.loads(response.data)
+        assert data['data'] is None
+        assert Users.query.get(2) is None
 
     def test_put_user_by_id(self):
         updated_fields = {
