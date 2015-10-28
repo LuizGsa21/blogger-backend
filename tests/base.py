@@ -5,6 +5,7 @@
 """
 
 import unittest
+import json
 from app import create_app
 from app.config import TestConfig
 from app.extensions import db
@@ -55,3 +56,11 @@ class TestCase(unittest.TestCase):
                 'body': 'Article body %s' % i,
             }))
         commit()
+
+    def login(self, username, password):
+        return self.client.post('/api/v1/auth/login',
+                                data=json.dumps({'data': {'username': username, 'password': password}}),
+                                content_type='application/json')
+
+    def logout(self):
+        return self.client.post('/api/v1/auth/logout', content_type='application/json')
