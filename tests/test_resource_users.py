@@ -6,29 +6,36 @@ import json
 
 
 class ResourceUsersTestCase(TestCase):
-    def test_create_user(self):
-        newUser = {
-            'username': 'LuizGsa21',
-            'email': 'LuizGsa21@email.com',
-            'firstName': 'Luiz',
-            'lastName': 'Arantes Sa',
-            'password': 'password-123',
-            'isAdmin': 1
+    def test_post_users(self):
+        new_user = {
+            'data': {
+                'type': 'users',
+                'attributes': {
+                    'username': 'LuizGsa21',
+                    'email': 'LuizGsa21@email.com',
+                    'firstName': 'Luiz',
+                    'lastName': 'Arantes Sa',
+                    'password': 'password-123',
+                    'isAdmin': 1
+                }
+            }
         }
         old_count = Users.query.count()
         # create a new user
-        response = self.client.post('/api/v1/users', data=json.dumps(newUser), content_type='application/json')
+        response = self.client.post('/api/v1/users', data=json.dumps(new_user), content_type='application/json')
         db.session.rollback()
-        self.assertEqual(old_count, Users.query.count() - 1, 'Expected a user to be created.')
-        self.assertEqual(response.status_code, 201,
-                         'Received %s Expected 201 status for when a resource is created.' % response.status)
-        self.assertFalse('password' in response.data, 'Password should not be returned in response.')
+        assert response.status_code == 201  # expected 201 status when a resource is created
+        assert response.data
+        assert old_count + 1 == Users.query.count()  # a new user should have been created
+        data = json.loads(response.data)['data']
+        assert data['links']['self']  # expected a self link to access the created resource
 
         # create a user using the same credentials. This should fail and return a 409 status.
-        response = self.client.post('/api/v1/users', data=json.dumps(newUser), content_type='application/json')
+        response = self.client.post('/api/v1/users', data=json.dumps(new_user), content_type='application/json')
         db.session.rollback()
-        self.assertEqual(response.status_code, 409, 'Expected 409 status since resource already exists.')
-        self.assertEqual(old_count, Users.query.count() - 1, "A user shouldn't have been created.")
+        assert response.status_code == 409
+        assert response.data
+        assert old_count + 1 == Users.query.count()  # count should still be the same
 
     def test_get_users(self):
         response = self.client.get('/api/v1/users', content_type='application/json')
