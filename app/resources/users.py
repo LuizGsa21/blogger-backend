@@ -1,6 +1,7 @@
 import pprint
 import json
 from flask import Blueprint, jsonify, request
+from flask_login import current_user
 from app.models import Articles, Users
 from app.schemas import user_post_serializer, user_serializer, user_resource_serializer
 from app.extensions import db
@@ -60,6 +61,10 @@ def put_user_by_id(id):
 
 @users_bp.route('/<int:id>', methods=['DELETE'])
 def delete_user_by_id(id):
+    if not current_user.is_admin or current_user.id == id:
+        response = jsonify(errors=[{'detail': 'You are not authorized to perform this operation.'}])
+        response.status_code = 403
+        return response
     Users.query.filter_by(id=id).delete()
     db.session.commit()
     return jsonify(data=None)

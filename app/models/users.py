@@ -70,5 +70,6 @@ class Users(db.Model, UserMixin):
     def email_insensitive(self):
         return CaseInsensitiveWord(self.email)
 
+    @property
     def is_admin(self):
         return self.isAdmin
