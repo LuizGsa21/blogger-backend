@@ -1,51 +1,63 @@
-from marshmallow import Schema, fields, validates_schema, ValidationError, pre_dump, pre_load
+from marshmallow import validates_schema, validates, ValidationError
 from app.models import Users
-from .schema_helpers import require
-from .base import ResourceSchema
+from .base import ResourceSchema, fields, Schema
+from app.utils import Role, Method
+
+
+class ResourceUserSchema(ResourceSchema):
+    class Meta:
+        type = 'users'
+
 
 class UserSchema(Schema):
-
+    username = fields.String()
     dateJoined = fields.DateTime()
+    password = fields.String(load_only=True)
 
     class Meta:
-        fields = ('username', 'firstName', 'lastName', 'dateJoined', 'avatarPath')
+        fields = Users.get_admin_safe_keys(Method.CREATE)
 
-user_serializer = UserSchema()
-
-class UserResourceSchema(ResourceSchema):
-    __model__ = Users
-    __serializer__ = user_serializer
-    type = fields.String('users')
-
-class UserPostSchema(Schema):
-    username = fields.String(required=require('username'))
-    email = fields.String(required=require('email'))
-    password = fields.String(required=require('password'))
-
-    class Meta:
-        fields = ('username', 'email', 'password', 'firstName', 'lastName')
-
-    @validates_schema
-    def validate_schema(self, data):
-
-        username = data['username']
-        existing_user = Users.query.filter_by(username_insensitive=username).first()
-        if existing_user:
-            raise ValidationError({'detail': "username '%s' already registered." % username, 'status': 409}, 'username')
-
-        email = data['email']
+    @validates('email')
+    def validate_email(self, email):
         existing_user = Users.query.filter_by(email_insensitive=email).first()
         if existing_user:
-            raise ValidationError({'detail': "email '%s' already registered." % email, 'status': 409}, 'email')
+            raise ValidationError({'detail': "email '%s' already registered." % email, 'status': 409})
 
-    @pre_load
-    def unwrap_data(self, data):
-        if 'data' in data:
-            data = data['data']
-        if 'attributes' in data:
-            data = data['attributes']
-        return data
+    @validates('username')
+    def validate_username(self, username):
+        existing_user = Users.query.filter_by(username_insensitive=username).first()
+        if existing_user:
+            raise ValidationError({'detail': "username '%s' already registered." % username, 'status': 409})
+
+    @validates_schema(pass_original=True)
+    def validate_schema(self, data, original):
+        self.validate_permission(data, original)
 
 
-user_post_serializer = UserPostSchema()
-user_resource_serializer = UserResourceSchema()
+class UserCreateSchema(UserSchema):
+    username = fields.String(required=True)
+    email = fields.String(required=True)
+    password = fields.String(required=True, load_only=True)
+
+    class Meta:
+        fields = Users.get_admin_safe_keys(Method.CREATE)
+
+
+create_user_admin_serializer = ResourceUserSchema(
+    UserCreateSchema
+)
+edit_user_admin_serializer = ResourceUserSchema(
+    UserSchema
+)
+
+create_user_serializer = ResourceUserSchema(
+    UserCreateSchema, param={'only': Users.get_safe_columns(Method.CREATE, Role.GUEST)}
+)
+
+edit_user_profile_serializer = ResourceUserSchema(
+    UserSchema, param={'only': Users.get_safe_columns(Method.UPDATE, Role.USER)}
+)
+
+view_user_serializer = ResourceUserSchema(
+    UserSchema, param={'only': Users.get_safe_columns(Method.READ, Role.GUEST)}
+)

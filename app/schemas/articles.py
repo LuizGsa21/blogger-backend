@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 from app.models import Articles
-from .base import ResourceSchema
+from .base import ResourceSchema, Schema
 
 
 class ArticleSchema(Schema):
@@ -15,10 +15,8 @@ article_serializer = ArticleSchema()
 
 
 class ArticleResourceSchema(ResourceSchema):
-    __model__ = Articles
-    __serializer__ = article_serializer
-
-    type = fields.String('articles')
+    class Meta:
+        type = 'articles'
 
 
-article_resource_serializer = ArticleResourceSchema()
+article_resource_serializer = ArticleResourceSchema(ArticleSchema)
