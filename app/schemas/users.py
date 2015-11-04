@@ -15,7 +15,7 @@ class UserSchema(Schema):
     password = fields.String(load_only=True)
 
     class Meta:
-        fields = Users.get_admin_safe_keys(Method.CREATE)
+        fields = Users.get_admin_columns(Method.CREATE)
 
     @validates('email')
     def validate_email(self, email):
@@ -40,7 +40,7 @@ class UserCreateSchema(UserSchema):
     password = fields.String(required=True, load_only=True)
 
     class Meta:
-        fields = Users.get_admin_safe_keys(Method.CREATE)
+        fields = Users.get_admin_columns(Method.CREATE)
 
 
 create_user_admin_serializer = ResourceUserSchema(
@@ -51,13 +51,13 @@ edit_user_admin_serializer = ResourceUserSchema(
 )
 
 create_user_serializer = ResourceUserSchema(
-    UserCreateSchema, param={'only': Users.get_safe_columns(Method.CREATE, Role.GUEST)}
+    UserCreateSchema, param={'only': Users.get_columns(Method.CREATE, Role.GUEST)}
 )
 
 edit_user_profile_serializer = ResourceUserSchema(
-    UserSchema, param={'only': Users.get_safe_columns(Method.UPDATE, Role.USER)}
+    UserSchema, param={'only': Users.get_columns(Method.UPDATE, Role.USER)}
 )
 
 view_user_serializer = ResourceUserSchema(
-    UserSchema, param={'only': Users.get_safe_columns(Method.READ, Role.GUEST)}
+    UserSchema, param={'only': Users.get_columns(Method.READ, Role.GUEST)}
 )

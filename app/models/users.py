@@ -79,22 +79,22 @@ class Users(db.Model, UserMixin):
         return self.role == Role.ADMIN
 
     @classmethod
-    def get_safe_columns(cls, method, role):
+    def get_columns(cls, method, role):
         if role == Role.ADMIN:
-            return cls.get_admin_safe_columns(method)
+            return cls.get_admin_columns(method)
         elif role == Role.USER:
-            return cls.get_user_safe_columns(method)
+            return cls.get_user_columns(method)
         elif role == Role.GUEST:
-            return cls.get_guest_safe_columns(method)
+            return cls.get_guest_columns(method)
         else:
             raise RuntimeError('Unknown role: {}'.format(role))
 
     @classmethod
-    def get_admin_safe_columns(cls, method):
+    def get_admin_columns(cls, method):
         return tuple(Users.__mapper__.columns.keys()) + ('password',)
 
     @classmethod
-    def get_guest_safe_columns(cls, method):
+    def get_guest_columns(cls, method):
         if method == Method.CREATE:
             return 'username', 'email', 'firstName', 'lastName', 'password'
         if method == Method.READ:
@@ -106,7 +106,7 @@ class Users(db.Model, UserMixin):
         raise RuntimeError('Unknown METHOD: {}'.format(method))
 
     @classmethod
-    def get_user_safe_columns(cls, method):
+    def get_user_columns(cls, method):
         if method == Method.CREATE:
             return None
         if method == Method.READ:
