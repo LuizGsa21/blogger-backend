@@ -49,7 +49,6 @@ class ResourceArticlesTestCase(TestCase):
             }
         }
         response = self.client.put('/api/v1/articles/1', data=json.dumps(updated_fields), content_type='application/json')
-        db.session.rollback()
         assert response.data  # expect a non-empty response
         assert response.status_code == 200
         data = json.loads(response.data)['data']['attributes']
@@ -58,15 +57,50 @@ class ResourceArticlesTestCase(TestCase):
         assert data['body'] == fields['body']
 
     # def test_post_articles(self):
-    #     pass
+    #     new_article = {
+    #         'data': {
+    #             'type': 'articles',
+    #             'attributes': {
+    #                 'title': 'New Title',
+    #                 'body': 'New Body'
+    #             }
+    #         }
+    #     }
+    #     old_count = Articles.query.count()
+    #     assert old_count  # verify fixture
+    #     response = self.client.post('/api/v1/articles', data=json.dumps(new_article), content_type='application/json')
     #
-    def test_delete_article_by_id(self):
-        article = Articles.query.get(2)
-        assert article  # verify fixture
-        response = self.client.delete('/api/v1/articles/2', content_type='application/json')
-        db.session.rollback()
-        assert response.data  # expect a non-empty response
-        assert response.status_code == 200
-        data = json.loads(response.data)
-        assert data['data'] is None
-        assert Articles.query.get(2) is None  # article should be deleted
+    #     assert response.data  # expect a non-empty response
+    #     assert response.status_code == 200
+    #
+    #     data = json.loads(response.data)['data']
+    #     assert data['links']['self']  # expect a url referencing the new resource
+    #
+    #     attributes = new_article['data']['attributes']
+    #     data = data['attributes']
+    #     assert data['title'] == attributes['title']
+    #     assert data['body'] == attributes['body']
+
+    # def test_delete_article_by_id(self):
+    #
+    #     # Anonymous users shouldn't be able to delete articles
+    #     response = self.client.delete('/api/v1/articles/2', content_type='application/json')
+    #     assert response.status_code == 403
+    #     assert Articles.query.get(2)
+    #
+    #     self.login('bob3', 'universe3')
+    #     # Even though we are logged in, we shouldn't be able to delete articles from other users
+    #     response = self.client.delete('/api/v1/articles/2', content_type='application/json')
+    #     assert response.status_code == 403  # we should have permission
+    #     assert Articles.query.get(2)
+    #
+    #     self.logout()
+    #     self.login('bob1', 'universe1')
+    #     assert Articles.query.get(3).authorId == 1  # verify fixture
+    #
+    #     # now we should be able to delete the article
+    #     response = self.client.delete('/api/v1/articles/3', content_type='application/json')
+    #     assert response.status_code == 200
+    #     data = json.loads(response.data)
+    #     assert data['data'] is None
+    #     assert Articles.query.get(3) is None  # article should be deleted

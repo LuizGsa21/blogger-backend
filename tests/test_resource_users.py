@@ -3,11 +3,12 @@ from tests.base import TestCase
 from app.models import Users
 from app.extensions import db
 import json
+from app.utils import Role
 
 
 class ResourceUsersTestCase(TestCase):
-    def test_post_users(self):
-        new_user = {
+    def _get_post_users_fixture(self):
+        return {
             'data': {
                 'type': 'users',
                 'attributes': {
@@ -15,107 +16,157 @@ class ResourceUsersTestCase(TestCase):
                     'email': 'LuizGsa21@email.com',
                     'firstName': 'Luiz',
                     'lastName': 'Arantes Sa',
-                    'password': 'password-123',
-                    'isAdmin': 1
+                    'password': 'password-123'
                 }
             }
         }
-        old_count = Users.query.count()
-        # create a new user
-        response = self.client.post('/api/v1/users', data=json.dumps(new_user), content_type='application/json')
-        db.session.rollback()
-        assert response.status_code == 201  # expected 201 status when a resource is created
-        assert response.data
-        assert old_count + 1 == Users.query.count()  # a new user should have been created
-        data = json.loads(response.data)['data']
-        assert data['links']['self']  # expected a self link to access the created resource
 
+    def test_post_users(self):
+        new_user = self._get_post_users_fixture()
+        # ensure user doesn't exist
+        get_user = Users.query.filter_by(username='LuizGsa21')
+        assert get_user.first() is None
+
+        response = self.client.post('/api/v1/users', data=json.dumps(new_user), content_type='application/json')
+        self.assert_201_created(response)
+        self.assert_resource_response(response,
+                                      type_='users',
+                                      links='self',
+                                      attributes_exclude='password')
+        assert get_user.first()  # expect the created user
         # create a user using the same credentials. This should fail and return a 409 status.
         response = self.client.post('/api/v1/users', data=json.dumps(new_user), content_type='application/json')
-        db.session.rollback()
-        assert response.status_code == 409
-        assert response.data
-        assert old_count + 1 == Users.query.count()  # count should still be the same
+        self.assert_409_conflict(response)
+        assert get_user.count() == 1
+
+    def test_admin_post_users(self):
+        new_user = self._get_post_users_fixture()
+        new_user['data']['attributes']['role'] = Role.ADMIN
+
+        # ensure user doesn't exist
+        get_user = Users.query.filter_by(username='LuizGsa21')
+        assert get_user.first() is None
+
+        # create an admin user (This should fail, we can only create an admin if we are logged in as admin)
+        response = self.client.post('/api/v1/users', data=json.dumps(new_user), content_type='application/json')
+        self.assert_403_forbidden(response)
+        assert get_user.first() is None
+
+        # login as admin and create an admin user
+        self.login_as_admin()
+        response = self.client.post('/api/v1/users', data=json.dumps(new_user), content_type='application/json')
+        self.assert_201_created(response)
+        self.assert_resource_response(response,
+                                      type_='users',
+                                      links='self',
+                                      attributes_exclude='password')
+        assert get_user.first()  # expected a user to be created
+        self.logout()
 
     def test_get_users(self):
         response = self.client.get('/api/v1/users', content_type='application/json')
-        assert response.data, 'Expected a non-empty response'
-        data = response.data
-        assert 'password' not in data, 'Password field should not be returned'
-        data = json.loads(data)
-        assert Users.query.count() == len(data['data']), 'Expected all users to be returned'
+        self.assert_200_ok(response)
+        self.assert_resource_response(response,
+                                      type_='users',
+                                      links='self',
+                                      attributes_keys=['username', 'lastName', 'avatarPath', 'dateJoined', 'firstName'],
+                                      attributes_exclude='password',
+                                      expected_count=Users.query.count())
 
     def test_get_user_by_id(self):
         response = self.client.get('/api/v1/users/2', content_type='application/json')
-        assert response.data, 'Expected a non-empty response'
-        data = response.data
-        assert 'password' not in data, 'Password field should not be returned'
-        data = json.loads(data)
-        assert data['data']['id'] == 2
-        assert data['data']['type'] == 'users'
-        attributes = data['data']['attributes']
-        assert attributes['username'] == 'bob1', \
-            'Expected user name to be `{0}` but got `{1}`'.format('bob1', attributes['username'])
+        self.assert_200_ok(response)
+        self.assert_resource_response(response,
+                                      type_='users',
+                                      id_=2,
+                                      links='self',
+                                      attributes_equal={'username': 'bob1'},
+                                      attributes_exclude='password')
 
     def test_delete_user_by_id(self):
-
         # attempt to delete a user using an anonymous user. Note: this should fail
         response = self.client.delete('/api/v1/users/2', content_type='application/json')
-        db.session.rollback()
-        assert response.status_code == 403
-        assert response.data
-        data = json.loads(response.data)
-        assert data['errors']
+        self.assert_403_forbidden(response)
         assert Users.query.get(2)
 
         # attempt to delete a user using an registered user. Note: this should fail
         self.login('bob1', 'universe1')
         response = self.client.delete('/api/v1/users/2', content_type='application/json')
-        db.session.rollback()
-        assert response.status_code == 403
-        assert response.data
-        data = json.loads(response.data)
-        assert data['errors']
+        self.assert_403_forbidden(response)
         assert Users.query.get(2)
         self.logout()
 
         # attempt to delete a user as an admin.
-        self.login('bob0', 'universe0')
-        user = Users.query.filter_by(username='bob0').first()
-        user.isAdmin = True
-        db.session.commit()
+        self.login_as_admin()
         response = self.client.delete('/api/v1/users/2', content_type='application/json')
-        db.session.rollback()
-        assert response.data
-        data = json.loads(response.data)
-        assert data['data'] is None
+        self.assert_204_no_content(response)
         assert Users.query.get(2) is None
 
     def test_put_user_by_id(self):
-        updated_fields = {
+        resource = {
             'data': {
                 'type': 'users',
-                'id': 1,
+                'id': "2",
                 'attributes': {
                     'username': 'LuizGsa21',
                     'email': 'LuizGsa21@email.com',
                     'firstName': 'Luiz',
                     'lastName': 'Arantes Sa',
-                    'avatarPath': 'avatar.jpg',
-                    'isAdmin': 1
+                    'oauthProvider': 'google-plus',
+                    'oauthId': '10293985777388',
+                    'avatarPath': 'avatar_new.jpg',
+                    'role': Role.ADMIN
                 }
             }
         }
-        response = self.client.put('/api/v1/users/1', data=json.dumps(updated_fields), content_type='application/json')
-        assert response.data, 'Expected a non-empty response'
-        db.session.rollback()
-        assert response.status_code == 200, 'Expected 200 response but got %s instead.' % response.status_code
-        assert response.data, 'Expected a non-empty response'
-        data = json.loads(response.data)['data']['attributes']
-        fields = updated_fields['data']['attributes']
-        assert data['username'] == fields['username'], 'Failed to update `username`'
-        assert data['firstName'] == fields['firstName'], 'Failed to update `firstName`'
-        user = Users.query.get(1)
-        assert user.isAdmin == 0,\
-            'We should not be able to update admin fields when using the endpoint api'
+        resource_json = json.dumps(resource)
+        # attempt to update a user using an anonymous user. (This should fail)
+        response = self.client.put('/api/v1/users/2', data=resource_json, content_type='application/json')
+        self.assert_403_forbidden(response)
+        self.assert_resource(resource, negate_attributes=True)
+
+        # attempt to update a user using an registered user. (This should fail)
+        self.login('bob1', 'universe1')
+        response = self.client.put('/api/v1/users/2', data=resource_json, content_type='application/json')
+        self.assert_403_forbidden(response)
+        self.assert_resource(resource, negate_attributes=True)
+        self.logout()
+
+        # attempt to update a user as an admin. (This should NOT fail)
+        self.login_as_admin()
+        response = self.client.put('/api/v1/users/2', data=resource_json, content_type='application/json')
+        self.assert_204_no_content(response)
+        self.assert_resource(resource)
+
+    def test_patch_user_by_id(self):
+        resource = {
+            'data': {
+                'type': 'users',
+                'id': "2",
+                'attributes': {
+                    'email': 'LuizGsa21@email.com',
+                    'firstName': 'Luiz',
+                    'lastName': 'Arantes Sa',
+                    'avatarPath': 'avatar_new.jpg',
+                }
+            }
+        }
+        resource_json = json.dumps(resource)
+        # attempt to update a user using an anonymous user. (This should fail)
+        response = self.client.patch('/api/v1/users/2', data=resource_json, content_type='application/json')
+        self.assert_401_unauthorized(response)
+        self.assert_resource(resource, negate_attributes=True)
+
+        # attempt to update a user using an registered user who's id doesn't match (This should fail)
+        self.login('bob0', 'universe0')
+        response = self.client.patch('/api/v1/users/2', data=resource_json, content_type='application/json')
+        self.assert_403_forbidden(response)
+        self.assert_resource(resource, negate_attributes=True)
+        self.logout()
+
+        # attempt to update a user using an registered whos id matches (This should NOT fail)
+        self.login('bob1', 'universe1')
+        response = self.client.patch('/api/v1/users/2', data=resource_json, content_type='application/json')
+        self.assert_204_no_content(response)
+        self.assert_resource(resource)
 
