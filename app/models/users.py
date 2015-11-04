@@ -1,10 +1,14 @@
+import pprint
 from app.extensions import db
 from datetime import datetime
 from flask import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from .sqlalchemy_helpers import CaseInsensitiveWord
 from sqlalchemy.ext.hybrid import hybrid_property
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
+from app.utils import Role, Method
+from sqlalchemy.orm import Load, load_only
+from sqlalchemy.sql.expression import literal_column
 
 
 class Users(db.Model, UserMixin):
@@ -25,7 +29,7 @@ class Users(db.Model, UserMixin):
     avatarPath = db.Column(db.String(255), default='avatar.jpg')
     dateJoined = db.Column(db.DateTime(), default=datetime.utcnow)
 
-    isAdmin = db.Column(db.Boolean(), default=False)
+    role = db.Column(db.String(), default=Role.USER)
 
     articles = db.relationship('Articles', backref='author', lazy='dynamic')
     comments = db.relationship('Comments', backref='user', lazy='dynamic')
@@ -72,4 +76,64 @@ class Users(db.Model, UserMixin):
 
     @property
     def is_admin(self):
-        return self.isAdmin
+        return self.role == Role.ADMIN
+
+    @classmethod
+    def get_safe_columns(cls, method, role):
+        if role == Role.ADMIN:
+            return cls.get_admin_safe_columns(method)
+        elif role == Role.USER:
+            return cls.get_user_safe_columns(method)
+        elif role == Role.GUEST:
+            return cls.get_guest_safe_columns(method)
+        else:
+            raise RuntimeError('Unknown role: {}'.format(role))
+
+    @classmethod
+    def get_admin_safe_columns(cls, method):
+        return tuple(Users.__mapper__.columns.keys()) + ('password',)
+
+    @classmethod
+    def get_guest_safe_columns(cls, method):
+        if method == Method.CREATE:
+            return 'username', 'email', 'firstName', 'lastName', 'password'
+        if method == Method.READ:
+            return 'id', 'username', 'firstName', 'lastName', 'avatarPath'
+        if method == Method.UPDATE:
+            return None
+        if method == Method.DELETE:
+            return None
+        raise RuntimeError('Unknown METHOD: {}'.format(method))
+
+    @classmethod
+    def get_user_safe_columns(cls, method):
+        if method == Method.CREATE:
+            return None
+        if method == Method.READ:
+            return 'id', 'email', 'username', 'firstName', 'lastName', 'avatarPath', 'role'
+        if method == Method.UPDATE:
+            return 'email', 'firstName', 'lastName', 'avatarPath', 'password'
+        if method == Method.DELETE:
+            return None
+        raise RuntimeError('Unknown METHOD: {}'.format(method))
+
+    def get_relationships(self, only=()):
+        if only:
+            resources = only
+        else:
+            resources = ('articles', 'comments')
+        return {resource: self._get_relationship(resource) for resource in resources}
+
+    def _get_relationship(self, type_):
+        items = getattr(self, type_)
+        items = items.options(load_only('id'))
+        results = []
+        for item in items:
+            results.append({'id': item.id, 'type': type_})
+
+        return {
+            'links': {
+                'related': url_for(type_ + '.get_' + type_, _external=True)
+            },
+            'data': results
+        }
