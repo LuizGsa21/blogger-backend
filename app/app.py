@@ -1,10 +1,11 @@
-
-from flask import Flask, g
+from flask import Flask, g, jsonify
 from extensions import db, login_manager
 from flask_login import AnonymousUserMixin as _AnonymousUserMixin
 from config import DevelopmentConfig
 from models import Categories, Comments, Articles, Users
+from .utils import Role, Error
 from resources import articles_bp, users_bp, comments_bp, auth_bp
+
 
 DEFAULT_BLUEPRINTS = (articles_bp, users_bp, comments_bp, auth_bp)
 
@@ -36,6 +37,12 @@ def configure_hook(app):
     # def before_request():
     #     g.user = current_user
 
+    @app.errorhandler(Error)
+    def handle_invalid_usage(error):
+        response = jsonify(error.get_errors())
+        response.status_code = error.status_code
+        return response
+
 
 def configure_extensions(app):
     """ Configure app extension. """
@@ -57,14 +64,15 @@ def configure_extensions(app):
         firstName = ''
         lastName = ''
         email = ''
+        role = Role.GUEST
         is_admin = False
 
     login_manager.login_view = 'auth.post_login'
     login_manager.session_protection = "strong"
     login_manager.anonymous_user = AnonymousUserMixin
 
+
 def configure_blueprints(app, blueprints):
     """ Registers blueprints to the applications """
     for blueprint in blueprints:
         app.register_blueprint(blueprint)
-
