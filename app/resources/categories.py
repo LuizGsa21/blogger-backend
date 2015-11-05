@@ -39,12 +39,12 @@ def post_categories():
 @categories_bp.route('/<int:id>', methods=['PUT'])
 @admin_required
 def put_category_by_id(id):
-    response = json.loads(request.data)
-    data, errors, = category_resource_serializer.dump(response['data']['attributes'])
-    Categories.query.filter_by(id=id).update(data)
+    data, errors, = category_resource_serializer.loads(request.data)
+    Categories.query.filter_by(id=id).update(data['attributes'])
     db.session.commit()
-    data, errors = category_resource_serializer.dump(Categories.query.get(id))
-    return jsonify(data=data)
+    response = jsonify()
+    response.status_code = 204
+    return response
 
 
 @categories_bp.route('/<int:id>', methods=['DELETE'])
