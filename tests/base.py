@@ -292,3 +292,11 @@ class TestCase(unittest.TestCase):
         r = response.get_json()
         data = self.walk(r, 'data')
         assert len(data) == count
+
+    def assert_resource_type(self, response, type_):
+        r = response.get_json()
+        data = self.walk(r, 'data')
+        if isinstance(data, list):
+            for obj in data:
+                assert 'type' in obj
+                assert obj['type'] == type_

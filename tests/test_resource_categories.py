@@ -46,7 +46,11 @@ class ResourceUsersTestCase(TestCase):
                                       links='self')
 
     def test_get_categories(self):
-        pass
+        current_count = Categories.query.count()
+        response = self.client.get('/api/v1/categories')
+        self.assert_200_ok(response)
+        self.assert_resource_count(response, current_count)
+        self.assert_resource_type(response, 'categories')
 
     def test_get_category_by_id(self):
         pass
