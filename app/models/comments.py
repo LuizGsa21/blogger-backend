@@ -16,3 +16,5 @@ class Comments(db.Model, meta.ResourceMixin):
 
     lastModified = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
     dateCreated = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
+
+    _relationships = ('users', 'articles', 'comments')
