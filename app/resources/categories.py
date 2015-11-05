@@ -1,3 +1,4 @@
+import pprint
 from flask import Blueprint, jsonify, request
 from app.models import Categories
 from app.schemas import category_resource_serializer
@@ -16,22 +17,28 @@ def get_categories():
 
 
 @categories_bp.route('/<int:id>', methods=['GET'])
-def get_article_by_id(id):
-    article = Categories.query.get(id)
-    data, errors = category_resource_serializer.dump(article)
-    data['relationships'] = article.get_relationships()
+def get_category_by_id(id):
+    category = Categories.query.get(id)
+    data, errors = category_resource_serializer.dump(category)
+    data['relationships'] = category.get_relationships()
     return jsonify(data=data)
 
 
 @categories_bp.route('', methods=['POST'])
 @admin_required
 def post_categories():
-    return ''
+    data, _ = category_resource_serializer.loads(request.data)
+    category = Categories(**data['attributes'])
+    db.session.add(category)
+    db.session.commit()
+    response = jsonify(data=category_resource_serializer.dump(category).data)
+    response.status_code = 201
+    return response
 
 
 @categories_bp.route('/<int:id>', methods=['PUT'])
 @admin_required
-def put_article_by_id(id):
+def put_category_by_id(id):
     response = json.loads(request.data)
     data, errors, = category_resource_serializer.dump(response['data']['attributes'])
     Categories.query.filter_by(id=id).update(data)
@@ -42,7 +49,7 @@ def put_article_by_id(id):
 
 @categories_bp.route('/<int:id>', methods=['DELETE'])
 @admin_required
-def delete_article_by_id(id):
+def delete_category_by_id(id):
     Categories.query.filter_by(id=id).delete()
     db.session.commit()
     return jsonify(data=None)
