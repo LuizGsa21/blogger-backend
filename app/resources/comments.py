@@ -30,8 +30,21 @@ def get_comment_by_id(id):
 @login_required
 def post_comments():
     data, _ = create_comment_serializer.loads(request.data)
+    relationships = data['relationships']
+    userId = relationships['user']['id']
 
-    return ''
+    if not current_user.is_admin and userId != str(current_user.id):
+        raise PermissionDeniedError('create', 'comment')
+    attributes = data['attributes']
+    attributes['userId'] = userId
+    attributes['articleId'] = relationships['article']['id']
+    attributes['parentId'] = relationships['comment']['id']
+    comment = Comments(**attributes)
+    db.session.add(comment)
+    db.session.commit()
+    response = jsonify(data=create_comment_serializer.dump(comment).data)
+    response.status_code = 201
+    return response
 
 @comments_bp.route('/<int:id>', methods=['PUT'])
 @login_required
@@ -41,7 +54,6 @@ def put_comment_by_id(id):
         raise PageNotFoundError()
     if not current_user.is_admin and comment.userId != current_user.id:
         raise PermissionDeniedError('edit', 'comment')
-
     data, _ = update_comment_serializer.loads(request.data)
     Comments.query.filter_by(id=id).update(data['attributes'])
     db.session.commit()
