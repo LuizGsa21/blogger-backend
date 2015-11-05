@@ -43,21 +43,18 @@ class UserCreateSchema(UserSchema):
         fields = Users.get_admin_columns(Method.CREATE)
 
 
-create_user_admin_serializer = ResourceUserSchema(
-    UserCreateSchema
-)
-edit_user_admin_serializer = ResourceUserSchema(
-    UserSchema
-)
+create_user_admin_serializer = ResourceUserSchema(UserCreateSchema)
 
 create_user_serializer = ResourceUserSchema(
     UserCreateSchema, param={'only': Users.get_columns(Method.CREATE, Role.GUEST)}
 )
 
+edit_user_admin_serializer = ResourceUserSchema(UserSchema)
+
 edit_user_profile_serializer = ResourceUserSchema(
     UserSchema, param={'only': Users.get_columns(Method.UPDATE, Role.USER)}
 )
 
-view_user_serializer = ResourceUserSchema(
+read_user_serializer = ResourceUserSchema(
     UserSchema, param={'only': Users.get_columns(Method.READ, Role.GUEST)}
 )

@@ -25,14 +25,10 @@ create_article_serializer = ArticleResourceSchema(
     ArticleSchema
 )
 
-edit_article_serializer = ArticleResourceSchema(
-    ArticleSchema
-)
-
 update_article_serializer = ArticleResourceSchema(
     ArticleSchema, param={'only': Articles.get_columns(Method.UPDATE, Role.USER)}
 )
 
-view_article_serializer = ArticleResourceSchema(
+read_article_serializer = ArticleResourceSchema(
     ArticleSchema, param={'only': Articles.get_columns(Method.READ, Role.GUEST)}
 )

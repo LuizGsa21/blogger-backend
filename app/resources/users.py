@@ -11,7 +11,7 @@ from app.schemas import (
     create_user_admin_serializer,
     edit_user_profile_serializer,
     edit_user_admin_serializer,
-    view_user_serializer
+    read_user_serializer
 )
 
 users_bp = Blueprint('users', __name__, url_prefix='/api/v1/users')
@@ -20,14 +20,14 @@ users_bp = Blueprint('users', __name__, url_prefix='/api/v1/users')
 @users_bp.route('', methods=['GET'])
 def get_users():
     users = Users.query.all()
-    data, errors = view_user_serializer.dump(users, many=True)
+    data, errors = read_user_serializer.dump(users, many=True)
     return jsonify(data=data)
 
 
 @users_bp.route('/<int:id>', methods=['GET'])
 def get_user_by_id(id):
     users = Users.query.get(id)
-    data, errors = view_user_serializer.dump(users)
+    data, errors = read_user_serializer.dump(users)
     data['relationships'] = users.get_relationships()
     return jsonify(data=data)
 

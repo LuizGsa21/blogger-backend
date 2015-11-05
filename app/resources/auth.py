@@ -1,6 +1,6 @@
 from flask import Blueprint, request, session, url_for
 from app.models import Users
-from app.schemas import view_user_serializer
+from app.schemas import read_user_serializer
 from app.extensions import login_manager, oauth
 from app.utils import jsonify
 from flask_login import current_user, login_user, logout_user
@@ -42,7 +42,7 @@ def post_login():
         return response
     else:
         login_user(user, remember=True)
-        response = jsonify(data=view_user_serializer.dump(user).data)
+        response = jsonify(data=read_user_serializer.dump(user).data)
         response.status_code = 200
         return response
 
