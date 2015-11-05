@@ -6,7 +6,7 @@ import json
 from app.utils import Role
 
 
-class ResourceUsersTestCase(TestCase):
+class ResourceCategoriesTestCase(TestCase):
     def _get_post_categories_fixture(self):
         return {
             'data': {
@@ -53,7 +53,15 @@ class ResourceUsersTestCase(TestCase):
         self.assert_resource_type(response, 'categories')
 
     def test_get_category_by_id(self):
-        pass
+        category = Categories.query.get(1)
+        assert category
+
+        response = self.client.get('/api/v1/categories/1')
+        self.assert_200_ok(response)
+        self.assert_resource_response(response,
+                                      type_='categories',
+                                      id_='1',
+                                      attributes_equal={'name': category.name})
 
     def test_delete_category_by_id(self):
         pass
