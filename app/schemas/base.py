@@ -107,6 +107,7 @@ class ResourceSchema(Schema):
     id = fields.String(dump_only=True)
     OPTIONS_CLASS = ResourceOpts
     links = fields.Function(lambda obj: {'self': obj.url})
+    relationships = fields.Dict()
 
     def __init__(self, schema, param={}, *args, **kwargs):
 
