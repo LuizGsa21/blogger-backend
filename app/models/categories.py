@@ -10,6 +10,8 @@ class Categories(db.Model, meta.ResourceMixin):
     
     articles = db.relationship('Articles', backref='categories', lazy='dynamic')
 
+    _relationships = ('articles',)
+
     @property
     def url(self):
         return url_for('categories.get_category_by_id', id=self.id, _external=True)
