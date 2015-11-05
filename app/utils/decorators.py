@@ -1,6 +1,6 @@
 from functools import wraps
 from flask_login import current_user
-from flask import jsonify
+from .tools import jsonify
 from .constants import HTTP_403_FORBIDDEN
 from errors import LoginRequiredError
 

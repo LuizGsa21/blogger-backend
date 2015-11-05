@@ -1,9 +1,9 @@
 import pprint
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 from app.models import Articles
 from app.schemas import article_resource_serializer, article_serializer
 from app.extensions import db
-from app.utils import login_required
+from app.utils import login_required, jsonify
 import app.utils as utils
 from flask_login import current_user
 import json

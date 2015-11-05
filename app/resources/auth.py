@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 from app.models import Users
 from app.schemas import view_user_serializer
 from app.extensions import login_manager
+from app.utils import jsonify
 from flask_login import current_user, login_user, logout_user
 import json
 

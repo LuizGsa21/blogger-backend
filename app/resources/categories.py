@@ -1,10 +1,10 @@
 import pprint
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 from app.models import Categories
 from app.schemas import category_resource_serializer
 from app.extensions import db
-from app.utils import admin_required
-import json
+from app.utils import admin_required, jsonify
+
 
 categories_bp = Blueprint('categories', __name__, url_prefix='/api/v1/categories')
 

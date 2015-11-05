@@ -1,4 +1,5 @@
-from flask import Flask, g, jsonify
+from flask import Flask, g
+from .utils import jsonify
 from extensions import db, login_manager, csrf
 from flask_login import AnonymousUserMixin as _AnonymousUserMixin
 from config import DevelopmentConfig
