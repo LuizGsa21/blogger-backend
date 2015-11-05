@@ -52,4 +52,6 @@ def put_category_by_id(id):
 def delete_category_by_id(id):
     Categories.query.filter_by(id=id).delete()
     db.session.commit()
-    return jsonify(data=None)
+    response = jsonify()
+    response.status_code = 204
+    return response
