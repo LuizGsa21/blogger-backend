@@ -11,6 +11,8 @@ from sqlalchemy.sql.expression import literal_column
 
 
 class ResourceMixin:
+
+    @property
     def _relationships(self):
         raise NotImplemented
 
