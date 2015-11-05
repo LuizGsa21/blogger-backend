@@ -6,3 +6,4 @@ from .users import (
     view_user_serializer
 )
 from .articles import article_serializer, article_resource_serializer
+from .categories import *
