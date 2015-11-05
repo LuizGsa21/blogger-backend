@@ -74,23 +74,23 @@ class ResourceUsersTestCase(TestCase):
                                       expected_count=Users.query.count())
 
     def test_get_user_by_id(self):
-        response = self.client.get('/api/v1/users/2', content_type='application/json')
+        response = self.client.get('/api/v1/users/1', content_type='application/json')
         self.assert_200_ok(response)
         self.assert_resource_response(response,
                                       type_='users',
-                                      id_=2,
+                                      id_=1,
                                       links='self',
-                                      attributes_equal={'username': 'bob1'},
+                                      attributes_equal={'username': 'bob0'},
                                       attributes_exclude='password')
 
     def test_delete_user_by_id(self):
         # attempt to delete a user using an anonymous user. Note: this should fail
         response = self.client.delete('/api/v1/users/2', content_type='application/json')
-        self.assert_403_forbidden(response)
+        self.assert_401_unauthorized(response)
         assert Users.query.get(2)
 
         # attempt to delete a user using an registered user. Note: this should fail
-        self.login('bob1', 'universe1')
+        self.login('bob1', 'mypassword')
         response = self.client.delete('/api/v1/users/2', content_type='application/json')
         self.assert_403_forbidden(response)
         assert Users.query.get(2)
@@ -122,11 +122,11 @@ class ResourceUsersTestCase(TestCase):
         resource_json = json.dumps(resource)
         # attempt to update a user using an anonymous user. (This should fail)
         response = self.client.put('/api/v1/users/2', data=resource_json, content_type='application/json')
-        self.assert_403_forbidden(response)
+        self.assert_401_unauthorized(response)
         self.assert_resource(resource, negate_attributes=True)
 
         # attempt to update a user using an registered user. (This should fail)
-        self.login('bob1', 'universe1')
+        self.login('bob1', 'mypassword')
         response = self.client.put('/api/v1/users/2', data=resource_json, content_type='application/json')
         self.assert_403_forbidden(response)
         self.assert_resource(resource, negate_attributes=True)
@@ -158,14 +158,14 @@ class ResourceUsersTestCase(TestCase):
         self.assert_resource(resource, negate_attributes=True)
 
         # attempt to update a user using an registered user who's id doesn't match (This should fail)
-        self.login('bob0', 'universe0')
+        self.login('bob0', 'mypassword')
         response = self.client.patch('/api/v1/users/2', data=resource_json, content_type='application/json')
         self.assert_403_forbidden(response)
         self.assert_resource(resource, negate_attributes=True)
         self.logout()
 
         # attempt to update a user using an registered whos id matches (This should NOT fail)
-        self.login('bob1', 'universe1')
+        self.login('bob1', 'mypassword')
         response = self.client.patch('/api/v1/users/2', data=resource_json, content_type='application/json')
         self.assert_204_no_content(response)
         self.assert_resource(resource)

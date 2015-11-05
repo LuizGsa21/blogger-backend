@@ -10,7 +10,7 @@ import json
 from app import create_app
 from app.config import TestConfig
 from app.extensions import db
-from app.models import Users, Articles, Categories
+from app.models import Users, Articles, Categories, Comments
 from app.utils import Role
 from flask.testing import FlaskClient
 from flask import Response
@@ -50,7 +50,10 @@ class TestCase(unittest.TestCase):
     """Base TestCase for our application."""
 
     _RESOURCE_TYPES = {
-        'users': Users
+        'users': Users,
+        'articles': Articles,
+        'comments': Comments,
+        'categories': Categories
     }
 
     def setUp(self):
@@ -78,7 +81,7 @@ class TestCase(unittest.TestCase):
         for i in range(10):
             all_users.append(Users(**{
                 'username': 'bob%s' % i,
-                'password': 'universe%s' % i,
+                'password': 'mypassword',
                 'firstName': 'Jimmy%s' % i,
                 'lastName': 'builder%s' % i,
             }))
@@ -87,7 +90,7 @@ class TestCase(unittest.TestCase):
         # create an admin user
         db.session.add(Users(**{
             'username': 'admin',
-            'password': 'password',
+            'password': 'mypassword',
             'firstName': 'Mike',
             'lastName': 'Willy',
             'role': Role.ADMIN
@@ -104,6 +107,11 @@ class TestCase(unittest.TestCase):
             }))
         commit()
 
+    def login_with_id(self, id):
+        user = Users.query.get(id)
+        assert user
+        return self.login(user.username, 'mypassword')
+
     def login(self, username, password):
         return self.client.post('/api/v1/auth/login',
                                 data=json.dumps({'data': {'username': username, 'password': password}}),
@@ -114,7 +122,7 @@ class TestCase(unittest.TestCase):
 
     def login_as_admin(self):
         self.logout()
-        response = self.login('admin', 'password')
+        response = self.login('admin', 'mypassword')
         self.assert_200_ok(response, 'Failed to login as admin.')
 
     def assert_status(self, response, status_code, message=None):
@@ -273,4 +281,14 @@ class TestCase(unittest.TestCase):
         return obj
 
     def assert_resource_should_not_exist(self, resource):
-        assert not self.assert_resource_exists(resource)
+        if 'data' in resource:
+            resource = resource['data']
+        model = self._RESOURCE_TYPES[resource['type']]
+        assert model
+        obj = model.query.get(resource['id'])
+        assert not obj
+
+    def assert_resource_count(self, response, count):
+        r = response.get_json()
+        data = self.walk(r, 'data')
+        assert len(data) == count
