@@ -7,3 +7,4 @@ from .users import (
 )
 from .articles import article_serializer, article_resource_serializer
 from .categories import *
+from .comments import *
