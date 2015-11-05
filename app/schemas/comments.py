@@ -15,7 +15,7 @@ class CommentSchema(Schema):
 
 class CommentResourceSchema(ResourceSchema):
     class Meta:
-        type = 'categories'
+        type = 'comments'
 
 
 comment_serializer = CommentSchema()

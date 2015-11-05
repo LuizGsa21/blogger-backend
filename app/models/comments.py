@@ -1,4 +1,5 @@
 from app.extensions import db
+from flask import url_for
 from datetime import datetime
 import meta
 
@@ -18,3 +19,8 @@ class Comments(db.Model, meta.ResourceMixin):
     dateCreated = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
 
     _relationships = ('users', 'articles', 'comments')
+
+    @property
+    def url(self):
+        return url_for('comments.get_comment_by_id', id=self.id, _external=True)
+
