@@ -98,13 +98,40 @@ class TestCase(unittest.TestCase):
         commit()
         user = all_users[0]
         category = all_categories[0]
+        all_articles = []
         for i in range(3):
-            session_add(Articles(**{
+            article = Articles(**{
                 'categoryId': category.id,
                 'authorId': user.id,
                 'title': 'Article #%s' % i,
                 'body': 'Article body %s' % i,
-            }))
+            })
+            all_articles.append(article)
+            session_add(article)
+        commit()
+        article = all_articles[0]
+        session_add(Comments(**{
+            'parentId': None,
+            'userId': 2,
+            'articleId': article.id,
+            'title': 'Comment #1',
+            'body': 'nice article, you should write another!'
+        }))
+        session_add(Comments(**{
+            'parentId': 1,
+            'userId': 3,
+            'articleId': article.id,
+            'title': 'Replying to comment #1',
+            'body': 'yeah I agree!'
+        }))
+        session_add(Comments(**{
+            'parentId': 2,
+            'userId': 4,
+            'articleId': article.id,
+            'title': 'Replying to comment #1',
+            'body': 'yeah I agree!'
+        }))
+
         commit()
 
     def login_with_id(self, id):
