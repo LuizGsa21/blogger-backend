@@ -31,8 +31,10 @@ class Users(db.Model, UserMixin):
 
     role = db.Column(db.String(), default=Role.USER)
 
-    articles = db.relationship('Articles', backref='author', lazy='dynamic')
-    comments = db.relationship('Comments', backref='user', lazy='dynamic')
+    articles = db.relationship('Articles', backref='users', lazy='dynamic')
+    comments = db.relationship('Comments', backref='users', lazy='dynamic')
+
+    _relationships = ('articles', 'comments')
 
     def __init__(self, **kwargs):
         password = kwargs.pop('password')
@@ -79,17 +81,6 @@ class Users(db.Model, UserMixin):
         return self.role == Role.ADMIN
 
     @classmethod
-    def get_columns(cls, method, role):
-        if role == Role.ADMIN:
-            return cls.get_admin_columns(method)
-        elif role == Role.USER:
-            return cls.get_user_columns(method)
-        elif role == Role.GUEST:
-            return cls.get_guest_columns(method)
-        else:
-            raise RuntimeError('Unknown role: {}'.format(role))
-
-    @classmethod
     def get_admin_columns(cls, method):
         return tuple(Users.__mapper__.columns.keys()) + ('password',)
 
@@ -116,24 +107,3 @@ class Users(db.Model, UserMixin):
         if method == Method.DELETE:
             return None
         raise RuntimeError('Unknown METHOD: {}'.format(method))
-
-    def get_relationships(self, only=()):
-        if only:
-            resources = only
-        else:
-            resources = ('articles', 'comments')
-        return {resource: self._get_relationship(resource) for resource in resources}
-
-    def _get_relationship(self, type_):
-        items = getattr(self, type_)
-        items = items.options(load_only('id'))
-        results = []
-        for item in items:
-            results.append({'id': item.id, 'type': type_})
-
-        return {
-            'links': {
-                'related': url_for(type_ + '.get_' + type_, _external=True)
-            },
-            'data': results
-        }
