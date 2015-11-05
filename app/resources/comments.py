@@ -61,7 +61,17 @@ def put_comment_by_id(id):
     response.status_code = 204
     return response
 
-@comments_bp.route('', methods=['DELETE'])
+@comments_bp.route('/<int:id>', methods=['DELETE'])
 @login_required
-def delete_comments():
-    return ''
+def delete_comment_by_id(id):
+    comment = Comments.query.filter_by(id=id).first()
+    if not comment:
+        raise PageNotFoundError()
+    if not current_user.is_admin and comment.userId != current_user.id:
+        raise PermissionDeniedError('delete', 'comment')
+    data, _ = read_comment_serializer.loads(request.data)
+    db.session.delete(comment)
+    db.session.commit()
+    response = jsonify()
+    response.status_code = 204
+    return response
