@@ -7,6 +7,8 @@ from errors import LoginRequiredError
 def admin_required(func):
     @wraps(func)
     def decorator(*args, **kwargs):
+        if not current_user.is_authenticated:
+            raise LoginRequiredError()
         if current_user.is_admin:
             return func(*args, **kwargs)
         else:
