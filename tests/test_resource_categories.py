@@ -92,6 +92,3 @@ class ResourceCategoriesTestCase(TestCase):
         response = self.client.put('/api/v1/categories/2', data=json.dumps(resource), content_type='application/json')
         self.assert_204_no_content(response)
         self.assert_resource(resource)
-
-    def test_patch_category_by_id(self):
-        pass
