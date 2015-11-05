@@ -4,10 +4,10 @@ from flask_login import AnonymousUserMixin as _AnonymousUserMixin
 from config import DevelopmentConfig
 from models import Categories, Comments, Articles, Users
 from .utils import Role, Error
-from resources import articles_bp, users_bp, comments_bp, auth_bp
+from resources import articles_bp, users_bp, comments_bp, auth_bp, categories_bp
 
 
-DEFAULT_BLUEPRINTS = (articles_bp, users_bp, comments_bp, auth_bp)
+DEFAULT_BLUEPRINTS = (articles_bp, users_bp, comments_bp, auth_bp, categories_bp)
 
 
 def create_app(app_name=None, blueprints=None, config=None):
