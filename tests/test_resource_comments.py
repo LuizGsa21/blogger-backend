@@ -111,3 +111,29 @@ class ResourceCommentsTestCase(TestCase):
         resource['data']['id'] = response.get_json()['data']['id']
         self.assert_resource(resource)
 
+    def test_delete_comment_by_id(self):
+        resource = {
+            'data': {
+                'type': 'comments',
+                'id': '2'
+            }
+        }
+        resource_json = json.dumps(resource)
+        comment = Comments.query.get(2)
+        # Anonymous users shouldn't be able to delete comments
+        response = self.client.delete('/api/v1/comments/2', data=resource_json, content_type='application/json')
+        self.assert_401_unauthorized(response)
+        self.assert_resource_exists(resource)
+
+        # attempt to delete a comment using a registered user without ownership. (This should fail)
+        self.login_with_id(comment.userId + 1)
+        response = self.client.delete('/api/v1/comments/2', data=resource_json, content_type='application/json')
+        self.assert_403_forbidden(response)
+        self.assert_resource_exists(resource)
+        self.logout()
+
+        # attempt to delete a comment using a registered user with ownership. (This should NOT fail)
+        self.login_with_id(comment.userId)
+        response = self.client.delete('/api/v1/comments/2', data=resource_json, content_type='application/json')
+        self.assert_204_no_content(response)
+        self.assert_resource_should_not_exist(resource)
