@@ -4,9 +4,6 @@ db = SQLAlchemy()
 # from flask_wtf import CsrfProtect
 # csrf = CsrfProtect()
 
-from flask_oauth import OAuth
-oauth = OAuth()
-
 from flask_mail import Mail, Message
 mail = Mail()
 
@@ -15,3 +12,6 @@ login_manager = LoginManager()
 
 from flask_wtf.csrf import CsrfProtect
 csrf = CsrfProtect()
+
+from flask_oauthlib.client import OAuth
+oauth = OAuth()

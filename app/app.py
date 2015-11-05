@@ -1,6 +1,6 @@
 from flask import Flask, g
 from .utils import jsonify
-from extensions import db, login_manager, csrf
+from extensions import db, login_manager, csrf, oauth
 from flask_login import AnonymousUserMixin as _AnonymousUserMixin
 from config import DevelopmentConfig
 from models import Categories, Comments, Articles, Users
@@ -58,6 +58,9 @@ def configure_extensions(app):
         raise CsrfTokenError()
 
     # mail.init_app(app)
+
+    # flask OAuthlib
+    oauth.init_app(app)
 
     # Login Manger
     login_manager.init_app(app)
