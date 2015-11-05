@@ -25,6 +25,7 @@ class Config(object):
 class DevelopmentConfig(Config):
     DEBUG = True
     SECRET_KEY = 'how-to-tutorials-development'
+    WTF_CSRF_SECRET_KEY = SECRET_KEY
     SQLALCHEMY_DATABASE_URI = 'postgresql://vagrant:vagrant@localhost:5432/test'
     # SERVER_NAME = 'ptutorials.mypassion.io'
 
@@ -54,6 +55,7 @@ class TestConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
     DEBUG = True
     SECRET_KEY = 'test'
+    WTF_CSRF_CHECK_DEFAULT = False
 
     GOOGLE_CLIENT_ID = os.environ['GOOGLE_CLIENT_ID']
     GOOGLE_CLIENT_SECRET = os.environ['GOOGLE_CLIENT_SECRET']

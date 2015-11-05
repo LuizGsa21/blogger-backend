@@ -31,6 +31,9 @@ class AdminRequiredError(Error):
     status_code = HTTP_403_FORBIDDEN
     message = [{'detail': 'You must be an admin to access this endpoint.', 'status': HTTP_403_FORBIDDEN}]
 
+class CsrfTokenError(Error):
+    status_code = HTTP_400_BAD_REQUEST
+    message = [{'detail': 'Invalid CSRF token.', 'status': HTTP_400_BAD_REQUEST}]
 
 class PermissionDeniedError(Error):
     status_code = HTTP_403_FORBIDDEN

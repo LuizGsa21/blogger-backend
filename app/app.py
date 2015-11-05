@@ -1,11 +1,10 @@
 from flask import Flask, g, jsonify
-from extensions import db, login_manager
+from extensions import db, login_manager, csrf
 from flask_login import AnonymousUserMixin as _AnonymousUserMixin
 from config import DevelopmentConfig
 from models import Categories, Comments, Articles, Users
-from .utils import Role, Error
+from .utils import Role, Error, CsrfTokenError
 from resources import articles_bp, users_bp, comments_bp, auth_bp, categories_bp
-
 
 DEFAULT_BLUEPRINTS = (articles_bp, users_bp, comments_bp, auth_bp, categories_bp)
 
@@ -51,7 +50,11 @@ def configure_extensions(app):
     db.create_all(app=app)
 
     # CSRF Protection
-    # csrf.init_app(app)
+    csrf.init_app(app)
+
+    @csrf.error_handler
+    def csrf_error(reason):
+        raise CsrfTokenError()
 
     # mail.init_app(app)
 
