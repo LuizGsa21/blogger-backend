@@ -1,7 +1,11 @@
+import pprint
 from flask import Blueprint, jsonify, request
 from app.models import Articles
 from app.schemas import article_resource_serializer, article_serializer
 from app.extensions import db
+from app.utils import login_required
+import app.utils as utils
+from flask_login import current_user
 import json
 
 articles_bp = Blueprint('articles', __name__, url_prefix='/api/v1/articles')
@@ -18,26 +22,59 @@ def get_articles():
 def get_article_by_id(id):
     article = Articles.query.get(id)
     data, errors = article_resource_serializer.dump(article)
-    return jsonify(data=data)
+    relationship, included = article.get_relationships(included=True)
+    data['relationships'] = relationship
+    return jsonify(data=data, included=included)
 
 
 @articles_bp.route('', methods=['POST'])
+@login_required
 def post_articles():
-    return ''
+    data, _ = article_resource_serializer.loads(request.data)
+    article = Articles(**data['attributes'])
+    relationships = data['relationships']
+    if current_user.is_admin:
+        article.authorId = relationships['author']['id']
+    else:
+        article.authorId = current_user.id
+    article.categoryId = data['relationships']['category']['id']
+    db.session.add(article)
+    db.session.commit()
+
+    response = jsonify(data=article_resource_serializer.dump(article).data)
+    response.status_code = 201
+    return response
 
 
 @articles_bp.route('/<int:id>', methods=['PUT'])
+@login_required
 def put_article_by_id(id):
-    response = json.loads(request.data)
-    data, errors, = article_serializer.dump(response['data']['attributes'])
-    Articles.query.filter_by(id=id).update(data)
+    article = Articles.query.filter_by(id=id).first()
+    if not article:
+        raise utils.PageNotFoundError()
+    if not current_user.is_admin and article.authorId != current_user.id:
+        raise utils.PermissionDeniedError('edit', 'article')
+
+    data, errors, = article_resource_serializer.loads(request.data)
+    Articles.query.filter_by(id=id).update(data['attributes'])
     db.session.commit()
-    data, errors = article_resource_serializer.dump(Articles.query.get(id))
-    return jsonify(data=data)
+    response = jsonify()
+    response.status_code = 204
+    return response
 
 
 @articles_bp.route('/<int:id>', methods=['DELETE'])
+@login_required
 def delete_article_by_id(id):
-    Articles.query.filter_by(id=id).delete()
+    article = Articles.query.filter_by(id=id).first()
+    if not article:
+        raise utils.PageNotFoundError()
+    if not current_user.is_admin and article.authorId != current_user.id:
+        raise utils.PermissionDeniedError('delete', 'article')
+    data, _ = article_resource_serializer.loads(request.data)
+    db.session.delete(article)
     db.session.commit()
-    return jsonify(data=None)
+    response = jsonify()
+    response.status_code = 204
+    return response
+

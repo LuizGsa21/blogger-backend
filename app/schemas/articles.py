@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 from app.models import Articles
 from .base import ResourceSchema, Schema
-
+from app.utils import Method, Role
 
 class ArticleSchema(Schema):
     dateCreated = fields.DateTime()
@@ -20,3 +20,19 @@ class ArticleResourceSchema(ResourceSchema):
 
 
 article_resource_serializer = ArticleResourceSchema(ArticleSchema)
+
+create_article_serializer = ArticleResourceSchema(
+    ArticleSchema
+)
+
+edit_article_serializer = ArticleResourceSchema(
+    ArticleSchema
+)
+
+update_article_serializer = ArticleResourceSchema(
+    ArticleSchema, param={'only': Articles.get_columns(Method.UPDATE, Role.USER)}
+)
+
+view_article_serializer = ArticleResourceSchema(
+    ArticleSchema, param={'only': Articles.get_columns(Method.READ, Role.GUEST)}
+)
