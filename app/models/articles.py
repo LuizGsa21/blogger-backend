@@ -7,7 +7,7 @@ from sqlalchemy.orm import Load, load_only
 from flask import url_for
 
 
-class Articles(db.Model):
+class Articles(db.Model, meta.ResourceMixin):
     __tablename__ = 'articles'
 
     id = db.Column(db.Integer(), primary_key=True)

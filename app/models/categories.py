@@ -1,7 +1,7 @@
 from app.extensions import db
+import meta
 
-
-class Categories(db.Model):
+class Categories(db.Model, meta.ResourceMixin):
     __tablename__ = 'categories'
 
     id = db.Column(db.Integer(), primary_key=True)

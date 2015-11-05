@@ -1,7 +1,8 @@
 from app.extensions import db
 from datetime import datetime
+import meta
 
-class Comments(db.Model):
+class Comments(db.Model, meta.ResourceMixin):
     __tablename__ = 'comments'
 
     id = db.Column(db.Integer(), primary_key=True)

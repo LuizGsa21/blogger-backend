@@ -9,9 +9,9 @@ from flask_login import UserMixin, current_user
 from app.utils import Role, Method
 from sqlalchemy.orm import Load, load_only
 from sqlalchemy.sql.expression import literal_column
+import meta
 
-
-class Users(db.Model, UserMixin):
+class Users(db.Model, meta.ResourceMixin, UserMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer(), primary_key=True)
