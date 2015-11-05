@@ -1,9 +1,6 @@
 from flask import jsonify
-from .constants import (
-    HTTP_400_BAD_REQUEST,
-    HTTP_403_FORBIDDEN,
-    HTTP_401_UNAUTHORIZED
-)
+from .constants import *
+
 
 class Error(Exception):
     def __init__(self, message=None, status_code=None):
@@ -20,10 +17,25 @@ class FieldError(Error):
     status_code = HTTP_400_BAD_REQUEST
 
 
+class PageNotFoundError(Error):
+    status_code = HTTP_404_NOT_FOUND
+    message = [{'detail': 'Page not found.', 'status': HTTP_404_NOT_FOUND}]
+
+
 class LoginRequiredError(Error):
     status_code = HTTP_401_UNAUTHORIZED
     message = [{'detail': 'You must be logged in to access this endpoint.', 'status': HTTP_401_UNAUTHORIZED}]
 
+
 class AdminRequiredError(Error):
     status_code = HTTP_403_FORBIDDEN
     message = [{'detail': 'You must be an admin to access this endpoint.', 'status': HTTP_403_FORBIDDEN}]
+
+
+class PermissionDeniedError(Error):
+    status_code = HTTP_403_FORBIDDEN
+
+    def __init__(self, action, resource):
+        self.message = [
+            {'detail': 'You do not have permission to %s this %s' % (action, resource), 'status': HTTP_403_FORBIDDEN}
+        ]
