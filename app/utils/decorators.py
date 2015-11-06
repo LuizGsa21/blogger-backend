@@ -4,6 +4,7 @@ from .tools import jsonify
 from .constants import HTTP_403_FORBIDDEN
 from errors import LoginRequiredError
 
+
 def admin_required(func):
     @wraps(func)
     def decorator(*args, **kwargs):
@@ -18,6 +19,7 @@ def admin_required(func):
 
     return decorator
 
+
 def login_required(func):
     @wraps(func)
     def decorator(*args, **kwargs):
@@ -25,5 +27,24 @@ def login_required(func):
             return func(*args, **kwargs)
         else:
             raise LoginRequiredError()
+
     return decorator
+
+
+class lazy_property(object):
+    def __init__(self, fget, class_property=True):
+        self.fget = fget
+        self.class_property = class_property
+        self.func_name = fget.__name__
+
+    def __get__(self, obj, cls):
+        if self.class_property:
+            value = self.fget(cls)
+            setattr(cls, self.func_name, value)
+            return value
+        elif obj:
+            value = self.fget(obj)
+            setattr(obj, self.func_name, value)
+            return value
+        return None
 

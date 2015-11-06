@@ -5,12 +5,16 @@ from flask import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_login import UserMixin, current_user
-from app.utils import Role, Method
+from app.utils import Role, Method, lazy_property
 from sqlalchemy.orm import Load, load_only
 from sqlalchemy.sql.expression import literal_column
 
 
 class ResourceMixin:
+
+    @lazy_property
+    def all_columns(self):
+        return tuple(self.__mapper__.columns.keys())
 
     @property
     def _relationships(self):
@@ -29,15 +33,15 @@ class ResourceMixin:
 
     @classmethod
     def get_admin_columns(cls, method):
-        return tuple(cls.__mapper__.columns.keys())
+        return cls.all_columns
 
     @classmethod
     def get_guest_columns(cls, method):
-        return tuple(cls.__mapper__.columns.keys())
+        return cls.all_columns
 
     @classmethod
     def get_user_columns(cls, method):
-        return tuple(cls.__mapper__.columns.keys())
+        return cls.all_columns
 
     def get_relationships(self, only=(), included=False, visibility=None):
         if only:
