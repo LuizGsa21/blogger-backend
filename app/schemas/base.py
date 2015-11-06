@@ -11,6 +11,7 @@ from .schema_helpers import FieldErrorFormatter as fe
 from app.utils.errors import FieldError
 from marshmallow.schema import VALIDATES
 
+
 def fail(self, key, **kwargs):
     raise ValidationError(self.error_messages[key])
 
@@ -90,6 +91,7 @@ class Schema(OSchema):
                         field_obj=field_obj
                     )
 
+
 class Recursive(fields.Nested):
     def serialize(self, attr, obj, accessor=None):
         # pass same object to the nested schema
@@ -129,3 +131,29 @@ class ResourceSchema(Schema):
         if 'data' in data:
             data = data['data']
         return data
+
+# TODO: replace ResourceSchema base class with resource_schema_factory
+def resource_schema_factory(type_, nested_schema, **kwargs):
+    id_kwargs = kwargs.pop('id', {'dump_only': True})
+    links_kwargs = kwargs.pop('links', {'func': lambda obj: {'self': obj.url}})
+    relationships_kwargs = kwargs.pop('relationships', {})
+    attributes_kwargs = kwargs.pop('attributes', {})
+
+    class ResourceSchema(Schema):
+        OPTIONS_CLASS = ResourceOpts
+        id = fields.String(**id_kwargs)
+        type = fields.Constant(type_)
+        attributes = Recursive(nested_schema, **attributes_kwargs)
+        links = fields.Function(**links_kwargs)
+        relationships = fields.Dict(**relationships_kwargs)
+
+        class Meta:
+            fields = ('id', 'type', 'attributes', 'links', 'relationships')
+
+        @pre_load(pass_many=True)
+        def unwrap_data(self, data, many):
+            if 'data' in data:
+                data = data['data']
+            return data
+
+    return ResourceSchema()
