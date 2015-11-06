@@ -82,7 +82,7 @@ class Users(db.Model, meta.ResourceMixin, UserMixin):
 
     @classmethod
     def get_admin_columns(cls, method):
-        return tuple(Users.__mapper__.columns.keys()) + ('password',)
+        return cls.all_columns
 
     @classmethod
     def get_guest_columns(cls, method):

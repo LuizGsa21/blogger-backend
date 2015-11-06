@@ -32,13 +32,12 @@ class Articles(db.Model, meta.ResourceMixin):
     @classmethod
     def get_guest_columns(cls, method):
         if method == Method.READ:
-            return tuple(Articles.__mapper__.columns.keys())
-        else:
-            return None
+            return cls.all_columns
+        return None
 
     @classmethod
     def get_user_columns(cls, method):
-        all_columns = set(Articles.__mapper__.columns.keys())
+        all_columns = set(cls.all_columns)
         if method == Method.CREATE:
             return all_columns - {'dateCreated', 'lastModified'}
         if method == Method.READ:

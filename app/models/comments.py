@@ -31,7 +31,7 @@ class Comments(db.Model, meta.ResourceMixin):
         if method == Method.CREATE:
             return None
         if method == Method.READ:
-            return 'title', 'body', 'lastModified', 'dateCreated'
+            return cls.all_columns
         if method == Method.UPDATE:
             return None
         if method == Method.DELETE:
@@ -41,11 +41,11 @@ class Comments(db.Model, meta.ResourceMixin):
     @classmethod
     def get_user_columns(cls, method):
         if method == Method.CREATE:
-            return 'title', 'body', 'parentId', 'userId'
+            return 'title', 'body', 'parentId', 'userId', 'articleId'
         if method == Method.READ:
-            return 'id', 'title', 'body', 'parentId', 'userId', 'lastModified', 'dateCreated'
+            return cls.all_columns
         if method == Method.UPDATE:
             return 'title', 'body'
         if method == Method.DELETE:
-            return None
+            return 'id',
         raise RuntimeError('Unknown METHOD: {}'.format(method))
