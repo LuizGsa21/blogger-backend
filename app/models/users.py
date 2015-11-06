@@ -24,7 +24,7 @@ class Users(db.Model, meta.ResourceMixin, UserMixin):
     firstName = db.Column(db.String(50))
     lastName = db.Column(db.String(50))
 
-    pwdhash = db.Column(db.String(255))
+    password = db.Column(db.String(255))
 
     avatarPath = db.Column(db.String(255), default='avatar.jpg')
     dateJoined = db.Column(db.DateTime(), default=datetime.utcnow)
@@ -42,10 +42,10 @@ class Users(db.Model, meta.ResourceMixin, UserMixin):
         super(Users, self).__init__(**kwargs)
 
     def check_password(self, password):
-        return check_password_hash(self.pwdhash, password)
+        return check_password_hash(self.password, password)
 
     def set_password(self, password):
-        self.pwdhash = generate_password_hash(password)
+        self.password = generate_password_hash(password)
 
     @property
     def url(self):
