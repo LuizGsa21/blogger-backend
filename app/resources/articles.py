@@ -5,7 +5,7 @@ from app.schemas import (
     read_article_serializer,
     create_article_serializer,
     update_article_serializer,
-    article_resource_serializer
+    delete_article_serializer
 )
 from app.extensions import db
 from app.utils import login_required, jsonify
@@ -76,7 +76,7 @@ def delete_article_by_id(id):
         raise utils.PageNotFoundError()
     if not current_user.is_admin and article.authorId != current_user.id:
         raise utils.PermissionDeniedError('delete', 'article')
-    data, _ = article_resource_serializer.loads(request.data)
+    data, _ = delete_article_serializer.loads(request.data)
     db.session.delete(article)
     db.session.commit()
     response = jsonify()

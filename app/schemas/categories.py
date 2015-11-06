@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, ValidationError, validates
 from app.models import Categories
 from sqlalchemy import func
-from .base import ResourceSchema, Schema
+from .base import Schema, resource_schema_factory
 
 from app.utils import Method, Role
 
@@ -14,13 +14,26 @@ class CategorySchema(Schema):
             raise ValidationError({'detail': 'Category "%s" already exists.' % name, 'status': 409})
 
     class Meta:
-        fields = ('id', 'name')
+        fields = Categories.all_columns
 
 
-class CategoryResourceSchema(ResourceSchema):
-    class Meta:
-        type = 'categories'
+create_category_serializer = resource_schema_factory(
+    'categories', CategorySchema,
+    attributes={'only': Categories.get_columns(Method.CREATE, Role.ADMIN)}
+)
 
+read_category_serializer = resource_schema_factory(
+    'categories', CategorySchema,
+    attributes={'only': Categories.get_columns(Method.READ, Role.GUEST)}
+)
 
-category_serializer = CategorySchema()
-category_resource_serializer = CategoryResourceSchema(CategorySchema)
+update_category_serializer = resource_schema_factory(
+    'categories', CategorySchema,
+    id={'required': True},
+    attributes={'only': Categories.get_columns(Method.UPDATE, Role.ADMIN)}
+)
+
+delete_category_serializer = resource_schema_factory(
+    'categories', CategorySchema,
+    id={'required': True}
+)

@@ -3,12 +3,13 @@ from app.models import Articles
 from .base import ResourceSchema, Schema
 from app.utils import Method, Role
 
+
 class ArticleSchema(Schema):
     dateCreated = fields.DateTime()
     lastModified = fields.DateTime()
 
     class Meta:
-        fields = ('title', 'body', 'dateCreated', 'lastModified')
+        fields = Articles.all_columns
 
 
 article_serializer = ArticleSchema()
@@ -19,16 +20,18 @@ class ArticleResourceSchema(ResourceSchema):
         type = 'articles'
 
 
-article_resource_serializer = ArticleResourceSchema(ArticleSchema)
-
 create_article_serializer = ArticleResourceSchema(
-    ArticleSchema
+    ArticleSchema, param={'only': Articles.get_columns(Method.CREATE, Role.USER)}
+)
+
+read_article_serializer = ArticleResourceSchema(
+    ArticleSchema, param={'only': Articles.get_columns(Method.READ, Role.GUEST)}
 )
 
 update_article_serializer = ArticleResourceSchema(
     ArticleSchema, param={'only': Articles.get_columns(Method.UPDATE, Role.USER)}
 )
 
-read_article_serializer = ArticleResourceSchema(
-    ArticleSchema, param={'only': Articles.get_columns(Method.READ, Role.GUEST)}
+delete_article_serializer = ArticleResourceSchema(
+    ArticleSchema, param={'only': Articles.get_columns(Method.DELETE, Role.USER)}
 )
