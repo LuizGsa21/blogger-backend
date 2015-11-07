@@ -3,12 +3,12 @@ from app.extensions import db
 from datetime import datetime
 from flask import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-from .sqlalchemy_helpers import CaseInsensitiveWord
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_login import UserMixin, current_user
 from app.utils import Role, Method
 from sqlalchemy.orm import Load, load_only
 from sqlalchemy.sql.expression import literal_column
+from meta.sqlalchemy_helpers import CaseInsensitiveWord
 import meta
 
 class Users(db.Model, meta.ResourceMixin, UserMixin):
