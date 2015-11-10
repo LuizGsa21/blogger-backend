@@ -43,6 +43,14 @@ def configure_hook(app):
         response.status_code = error.status_code
         return response
 
+    # temporarily allow CORS for front-end development
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        # response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        # response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+        return response
+
 
 def configure_extensions(app):
     """ Configure app extension. """
